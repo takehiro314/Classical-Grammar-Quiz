@@ -583,6 +583,34 @@
       padding: 0 18px 18px;
     }
 
+    @media (max-width: 719px) {
+      .app {
+        padding-bottom: max(96px, env(safe-area-inset-bottom));
+      }
+
+      #quizCard > .actions {
+        position: sticky;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        z-index: 8;
+        padding: 10px 12px;
+        margin: 0 10px 10px;
+        border-radius: 20px;
+        background: rgba(255, 250, 242, 0.94);
+        border: 1px solid rgba(19, 34, 45, 0.10);
+        box-shadow: 0 14px 34px rgba(19, 34, 45, 0.16);
+        backdrop-filter: blur(12px);
+      }
+
+      #quizCard .feedback {
+        min-height: auto;
+        padding-bottom: 14px;
+      }
+
+      #quizCard .footer-note {
+        padding-bottom: 22px;
+      }
+    }
+
     .action-btn {
       min-height: 54px;
       padding: 14px 16px;
@@ -1084,7 +1112,7 @@
       setupStatus: document.getElementById("setupStatus"),
     };
 
-    const APP_VERSION = "1.6.0";
+    const APP_VERSION = "1.6.1";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
 
@@ -1544,6 +1572,28 @@
       });
     }
 
+    function isMobileView() {
+      return window.matchMedia("(max-width: 719px)").matches;
+    }
+
+    function scrollQuizToStart() {
+      if (!isMobileView()) {
+        return;
+      }
+      requestAnimationFrame(() => {
+        elements.quizCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
+    function scrollNextButtonIntoView() {
+      if (!isMobileView()) {
+        return;
+      }
+      window.setTimeout(() => {
+        elements.nextBtn.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 40);
+    }
+
     function renderStep() {
       const question = currentQuestion();
       const step = currentStep();
@@ -1588,6 +1638,7 @@
       elements.nextBtn.textContent = nextButtonLabel();
       elements.skipBtn.disabled = false;
       state.stepLocked = false;
+      scrollQuizToStart();
     }
 
     function handleChoice(choice, skipped = false) {
@@ -1619,6 +1670,7 @@
 
       elements.nextBtn.disabled = false;
       elements.nextBtn.textContent = nextButtonLabel();
+      scrollNextButtonIntoView();
       saveProgress();
       updateSaveButtons();
     }
@@ -1660,6 +1712,7 @@
 
     function showResults() {
       showScreen("results");
+      requestAnimationFrame(() => elements.resultsCard.scrollIntoView({ behavior: "smooth", block: "start" }));
 
       const totalQuestions = state.questions.length;
       const totalSteps = state.questionResults.reduce((sum, record) => sum + record.responses.length, 0);
