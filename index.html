@@ -356,6 +356,143 @@
       box-shadow: 0 10px 20px rgba(28, 102, 133, 0.18);
     }
 
+
+    .pos-filter-toggle {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+      gap: 8px;
+      padding: 6px;
+      border-radius: 18px;
+      background: rgba(28, 102, 133, 0.08);
+      border: 1px solid rgba(28, 102, 133, 0.12);
+    }
+
+    .pos-filter-option {
+      appearance: none;
+      border: 1px solid transparent;
+      min-height: 44px;
+      padding: 9px 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.58);
+      color: var(--muted);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+    }
+
+    .pos-filter-option.selected {
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: white;
+      box-shadow: 0 10px 20px rgba(28, 102, 133, 0.18);
+    }
+
+    .range-close-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+
+    .range-picker-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .range-picker-panel {
+      display: grid;
+      gap: 10px;
+      padding: 13px;
+      border-radius: 20px;
+      background: rgba(28, 102, 133, 0.07);
+      border: 1px solid rgba(28, 102, 133, 0.13);
+    }
+
+    .range-picker-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .range-picker-title {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .range-picker-help {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.7;
+    }
+
+    .sentence-range-list {
+      display: grid;
+      gap: 8px;
+      max-height: min(56vh, 520px);
+      overflow: auto;
+      padding: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sentence-range-item {
+      appearance: none;
+      width: 100%;
+      border: 1px solid rgba(19, 34, 45, 0.10);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      padding: 12px 13px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .sentence-range-item .range-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.35rem;
+      height: 1.65rem;
+      border-radius: 999px;
+      background: rgba(28, 102, 133, 0.10);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .sentence-range-item .range-sentence {
+      line-height: 1.65;
+      font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-weight: 700;
+    }
+
+    .sentence-range-item.start,
+    .sentence-range-item.end {
+      border-color: rgba(28, 102, 133, 0.36);
+      background: rgba(28, 102, 133, 0.12);
+    }
+
+    .sentence-range-item.in-range {
+      background: rgba(17, 130, 93, 0.08);
+      border-color: rgba(17, 130, 93, 0.16);
+    }
+
+    .sentence-range-item.start .range-index,
+    .sentence-range-item.end .range-index {
+      background: var(--accent-strong);
+      color: white;
+    }
+
     .quiz-home-btn {
       min-height: 38px;
       padding: 8px 12px;
@@ -1038,6 +1175,21 @@
             <input id="questionCountInput" type="number" min="1" value="1" inputmode="numeric" />
           </div>
         </div>
+        <div class="range-picker-actions">
+          <button class="action-btn secondary" id="openRangePickerBtn" type="button">文章一覧から範囲を選ぶ</button>
+          <div class="range-picker-panel screen-hidden" id="rangePickerPanel">
+            <div class="range-picker-head">
+              <p class="range-picker-title">文章一覧</p>
+              <span class="meta-chip" id="rangePickerStatus">開始位置を選択</span>
+              <button class="quiz-home-btn" id="closeRangePickerTopBtn" type="button">閉じる</button>
+            </div>
+            <p class="range-picker-help">元の文だけを表示します。開始にしたい文をタップし、続けて終了にしたい文をタップしてください。もう一度選ぶと範囲を指定し直せます。</p>
+            <div class="sentence-range-list" id="sentenceRangeList"></div>
+            <div class="range-close-actions">
+              <button class="action-btn secondary" id="closeRangePickerBottomBtn" type="button">文章一覧を閉じる</button>
+            </div>
+          </div>
+        </div>
         <div class="setup-field order-panel">
           <p class="order-title">出題順</p>
           <div class="order-toggle" role="radiogroup" aria-label="出題順">
@@ -1049,6 +1201,16 @@
               <input type="radio" name="orderMode" value="random" />
               ランダムに出題
             </label>
+          </div>
+        </div>
+        <div class="setup-field order-panel">
+          <p class="order-title">出題する品詞</p>
+          <div class="pos-filter-toggle" id="posFilterToggle" aria-label="出題する品詞">
+            <button class="pos-filter-option selected" type="button" data-pos="動詞">動詞</button>
+            <button class="pos-filter-option selected" type="button" data-pos="形容詞">形容詞</button>
+            <button class="pos-filter-option selected" type="button" data-pos="形容動詞">形容動詞</button>
+            <button class="pos-filter-option selected" type="button" data-pos="助詞">助詞</button>
+            <button class="pos-filter-option selected" type="button" data-pos="助動詞">助動詞</button>
           </div>
         </div>
         <p class="import-status" id="setupStatus">CSVで文章順に問題を並べた場合は、範囲指定でその一部だけを演習できます。</p>
@@ -1341,9 +1503,16 @@
       questionCountInput: document.getElementById("questionCountInput"),
       setupCountChip: document.getElementById("setupCountChip"),
       setupStatus: document.getElementById("setupStatus"),
+      openRangePickerBtn: document.getElementById("openRangePickerBtn"),
+      rangePickerPanel: document.getElementById("rangePickerPanel"),
+      sentenceRangeList: document.getElementById("sentenceRangeList"),
+      rangePickerStatus: document.getElementById("rangePickerStatus"),
+      closeRangePickerTopBtn: document.getElementById("closeRangePickerTopBtn"),
+      closeRangePickerBottomBtn: document.getElementById("closeRangePickerBottomBtn"),
+      posFilterToggle: document.getElementById("posFilterToggle"),
     };
 
-    const APP_VERSION = "1.7.2";
+    const APP_VERSION = "1.7.4";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
     const HISTORY_KEY = "classicalGrammarQuiz.history.v1";
@@ -1370,6 +1539,11 @@
         rangeStart: 1,
         rangeEnd: 1,
         questionCount: 1,
+        selectedPos: [...POS_OPTIONS],
+      },
+      rangePicker: {
+        start: null,
+        end: null,
       },
     };
 
@@ -1485,6 +1659,114 @@
       elements.rangeStartInput.value = String(currentStart);
       elements.rangeEndInput.value = String(currentEnd);
       elements.questionCountInput.value = String(Math.min(Math.max(Number(elements.questionCountInput.value) || (currentEnd - currentStart + 1), 1), currentEnd - currentStart + 1));
+      if (elements.sentenceRangeList && !elements.rangePickerPanel.classList.contains("screen-hidden")) {
+        updateRangePickerSelection();
+      }
+    }
+
+    function updateRangePickerSelection() {
+      const start = Number(elements.rangeStartInput.value) || 1;
+      const end = Number(elements.rangeEndInput.value) || start;
+      const min = Math.min(start, end);
+      const max = Math.max(start, end);
+      elements.sentenceRangeList.querySelectorAll(".sentence-range-item").forEach((button) => {
+        const index = Number(button.dataset.index);
+        button.classList.toggle("start", index === min);
+        button.classList.toggle("end", index === max);
+        button.classList.toggle("in-range", index > min && index < max);
+      });
+      elements.rangePickerStatus.textContent = `選択中: ${min}〜${max}`;
+    }
+
+    function renderRangePicker() {
+      elements.sentenceRangeList.innerHTML = activeQuestionBank
+        .map((question, index) => `
+          <button class="sentence-range-item" type="button" data-index="${index + 1}">
+            <span class="range-index">${index + 1}</span>
+            <span class="range-sentence">${escapeHtml(question.sentence || "（文章なし）")}</span>
+          </button>
+        `)
+        .join("");
+
+      elements.sentenceRangeList.querySelectorAll(".sentence-range-item").forEach((button) => {
+        button.addEventListener("click", () => selectRangeBySentence(Number(button.dataset.index)));
+      });
+      updateRangePickerSelection();
+    }
+
+    function selectRangeBySentence(index) {
+      if (!state.rangePicker.start || (state.rangePicker.start && state.rangePicker.end)) {
+        state.rangePicker.start = index;
+        state.rangePicker.end = null;
+        elements.rangeStartInput.value = String(index);
+        elements.rangeEndInput.value = String(index);
+        elements.questionCountInput.value = "1";
+        elements.rangePickerStatus.textContent = `開始: ${index} / 終了を選択`;
+      } else {
+        state.rangePicker.end = index;
+        const start = Math.min(state.rangePicker.start, state.rangePicker.end);
+        const end = Math.max(state.rangePicker.start, state.rangePicker.end);
+        elements.rangeStartInput.value = String(start);
+        elements.rangeEndInput.value = String(end);
+        elements.questionCountInput.value = String(end - start + 1);
+        elements.rangePickerStatus.textContent = `選択中: ${start}〜${end}`;
+      }
+      syncSetupInputs({ normalize: true });
+      updateRangePickerSelection();
+    }
+
+
+    function closeRangePicker() {
+      elements.rangePickerPanel.classList.add("screen-hidden");
+      elements.openRangePickerBtn.textContent = "文章一覧から範囲を選ぶ";
+    }
+
+    function resetPosFilter() {
+      elements.posFilterToggle.querySelectorAll(".pos-filter-option").forEach((button) => {
+        button.classList.add("selected");
+        button.setAttribute("aria-pressed", "true");
+      });
+    }
+
+    function getSelectedPosFilters() {
+      const selected = [...elements.posFilterToggle.querySelectorAll(".pos-filter-option.selected")]
+        .map((button) => button.dataset.pos)
+        .filter(Boolean);
+      return selected.length ? selected : [...POS_OPTIONS];
+    }
+
+    function setSelectedPosFilters(posList) {
+      const safe = Array.isArray(posList) && posList.length ? posList : POS_OPTIONS;
+      elements.posFilterToggle.querySelectorAll(".pos-filter-option").forEach((button) => {
+        const active = safe.includes(button.dataset.pos);
+        button.classList.toggle("selected", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    function updatePosFilterStatus() {
+      const selected = getSelectedPosFilters();
+      const start = Math.min(Math.max(Number(elements.rangeStartInput.value) || 1, 1), activeQuestionBank.length || 1);
+      const end = Math.min(Math.max(Number(elements.rangeEndInput.value) || activeQuestionBank.length || 1, 1), activeQuestionBank.length || 1);
+      const min = Math.min(start, end);
+      const max = Math.max(start, end);
+      const filteredCount = activeQuestionBank
+        .slice(min - 1, max)
+        .filter((question) => selected.includes(question.pos)).length;
+      const label = selected.length === POS_OPTIONS.length ? "全品詞" : selected.join("・");
+      elements.setupStatus.textContent = `${label}から出題します。現在の範囲では ${filteredCount} 問が対象です。`;
+    }
+
+    function toggleRangePicker() {
+      const willOpen = elements.rangePickerPanel.classList.contains("screen-hidden");
+      elements.rangePickerPanel.classList.toggle("screen-hidden", !willOpen);
+      elements.openRangePickerBtn.textContent = willOpen ? "文章一覧を閉じる" : "文章一覧から範囲を選ぶ";
+      if (willOpen) {
+        state.rangePicker.start = null;
+        state.rangePicker.end = null;
+        renderRangePicker();
+        requestAnimationFrame(() => elements.rangePickerPanel.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
     }
 
     function openSetup() {
@@ -1495,8 +1777,14 @@
       const sequentialRadio = document.querySelector('input[name="orderMode"][value="sequential"]');
       if (sequentialRadio) sequentialRadio.checked = true;
       updateOrderToggleUI();
+      resetPosFilter();
       syncSetupInputs();
-      elements.setupStatus.textContent = "範囲と問題数を選んでから開始してください。";
+      updatePosFilterStatus();
+      elements.rangePickerPanel.classList.add("screen-hidden");
+      elements.openRangePickerBtn.textContent = "文章一覧から範囲を選ぶ";
+      state.rangePicker.start = null;
+      state.rangePicker.end = null;
+      renderRangePicker();
       showScreen("setup");
     }
 
@@ -1505,19 +1793,24 @@
       let start = Math.min(Math.max(Number(elements.rangeStartInput.value) || 1, 1), total);
       let end = Math.min(Math.max(Number(elements.rangeEndInput.value) || total, 1), total);
       if (end < start) [start, end] = [end, start];
-      const available = end - start + 1;
-      const count = Math.min(Math.max(Number(elements.questionCountInput.value) || available, 1), available);
+      const selectedPos = getSelectedPosFilters();
+      const available = activeQuestionBank.slice(start - 1, end).filter((question) => selectedPos.includes(question.pos)).length;
+      const count = Math.min(Math.max(Number(elements.questionCountInput.value) || Math.max(available, 1), 1), Math.max(available, 1));
       const checked = document.querySelector('input[name="orderMode"]:checked');
       return {
         orderMode: checked ? checked.value : "sequential",
         rangeStart: start,
         rangeEnd: end,
         questionCount: count,
+        selectedPos,
       };
     }
 
     function buildQuestionSetFromSettings(settings) {
-      const ranged = activeQuestionBank.slice(settings.rangeStart - 1, settings.rangeEnd);
+      const selectedPos = Array.isArray(settings.selectedPos) && settings.selectedPos.length ? settings.selectedPos : POS_OPTIONS;
+      const ranged = activeQuestionBank
+        .slice(settings.rangeStart - 1, settings.rangeEnd)
+        .filter((question) => selectedPos.includes(question.pos));
       const ordered = settings.orderMode === "random" ? shuffle(ranged) : [...ranged];
       return ordered.slice(0, settings.questionCount);
     }
@@ -2493,6 +2786,22 @@
     elements.openHistoryBtn.addEventListener("click", showHistoryResults);
     elements.backHomeBtn.addEventListener("click", () => showScreen("home"));
     elements.beginQuizBtn.addEventListener("click", beginQuizFromSetup);
+    elements.openRangePickerBtn.addEventListener("click", toggleRangePicker);
+    elements.closeRangePickerTopBtn.addEventListener("click", closeRangePicker);
+    elements.closeRangePickerBottomBtn.addEventListener("click", closeRangePicker);
+    elements.posFilterToggle.querySelectorAll(".pos-filter-option").forEach((button) => {
+      button.setAttribute("aria-pressed", "true");
+      button.addEventListener("click", () => {
+        button.classList.toggle("selected");
+        button.setAttribute("aria-pressed", button.classList.contains("selected") ? "true" : "false");
+        const selectedCount = elements.posFilterToggle.querySelectorAll(".pos-filter-option.selected").length;
+        if (!selectedCount) {
+          button.classList.add("selected");
+          button.setAttribute("aria-pressed", "true");
+        }
+        updatePosFilterStatus();
+      });
+    });
     elements.quizHomeBtn.addEventListener("click", returnHomeFromQuiz);
     elements.homeBtn.addEventListener("click", returnHomeFromResults);
     elements.homeTopBtn.addEventListener("click", returnHomeFromResults);
@@ -2504,8 +2813,12 @@
       input.addEventListener("change", updateOrderToggleUI);
     });
     [elements.rangeStartInput, elements.rangeEndInput, elements.questionCountInput].forEach((input) => {
-      input.addEventListener("input", () => syncSetupInputs({ normalize: false }));
-      input.addEventListener("blur", () => syncSetupInputs({ normalize: true }));
+      input.addEventListener("input", () => {
+        state.rangePicker.start = null;
+        state.rangePicker.end = null;
+        syncSetupInputs({ normalize: false });
+      });
+      input.addEventListener("blur", () => { syncSetupInputs({ normalize: true }); updatePosFilterStatus(); });
       input.addEventListener("change", () => syncSetupInputs({ normalize: true }));
     });
 
