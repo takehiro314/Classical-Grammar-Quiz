@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4efe7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="古典文法クイズ" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="./apple-touch-icon.png" />
+  <title>古典文法クイズ</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700;800&display=swap");
+
+    :root {
+      --bg: #f3ede3;
+      --bg-deep: #e7dbc6;
+      --panel: rgba(255, 250, 242, 0.92);
+      --panel-strong: #fffdf9;
+      --ink: #13222d;
+      --muted: #5b6874;
+      --line: rgba(19, 34, 45, 0.12);
+      --shadow: 0 24px 60px rgba(19, 34, 45, 0.12);
+      --accent: #1c6685;
+      --accent-strong: #154c66;
+      --accent-soft: rgba(28, 102, 133, 0.12);
+      --accent-warm: #f59e0b;
+      --success: #11825d;
+      --danger: #bb3e3e;
+      --success-soft: rgba(17, 130, 93, 0.12);
+      --danger-soft: rgba(187, 62, 62, 0.12);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.95), transparent 32%),
+        radial-gradient(circle at 90% 12%, rgba(245, 158, 11, 0.20), transparent 26%),
+        radial-gradient(circle at 82% 88%, rgba(28, 102, 133, 0.16), transparent 30%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 24rem;
+      height: 24rem;
+      border-radius: 50%;
+      filter: blur(72px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    body::before {
+      left: -6rem;
+      top: 6rem;
+      background: rgba(28, 102, 133, 0.35);
+    }
+
+    body::after {
+      right: -8rem;
+      bottom: -4rem;
+      background: rgba(245, 158, 11, 0.30);
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 20px 16px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      padding: 18px 6px 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--accent-strong);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border: 1px solid rgba(19, 34, 45, 0.08);
+      box-shadow: 0 8px 18px rgba(19, 34, 45, 0.06);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 999px;
+      background: var(--accent-warm);
+      box-shadow: 0 0 0 0.35rem rgba(245, 158, 11, 0.16);
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-size: clamp(2rem, 6.2vw, 3.7rem);
+      line-height: 1.14;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+
+    h1 .title-line {
+      display: block;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 42rem;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.7vw, 1.1rem);
+      line-height: 1.85;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-top: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(19, 34, 45, 0.09);
+      color: var(--accent-strong);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .badge::before {
+      content: "";
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .import-card {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .import-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .import-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .import-help {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .file-input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(28, 102, 133, 0.10);
+      color: var(--accent-strong);
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid rgba(28, 102, 133, 0.16);
+    }
+
+    .import-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 243, 0.90));
+      border: 1px solid rgba(19, 34, 45, 0.10);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 30%);
+    }
+
+    .sentence-block {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid rgba(19, 34, 45, 0.08);
+      background: linear-gradient(180deg, rgba(28, 102, 133, 0.08), rgba(28, 102, 133, 0.02));
+    }
+
+    .section-label {
+      margin-bottom: 10px;
+      color: var(--accent-strong);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .sentence {
+      margin: 0;
+      font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-size: clamp(1.15rem, 3.9vw, 1.8rem);
+      line-height: 1.9;
+      color: var(--ink);
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    .target-highlight {
+      display: inline;
+      padding: 0 0.05em;
+      color: inherit;
+      background: linear-gradient(transparent 60%, rgba(28, 102, 133, 0.25) 60%);
+      border-radius: 0.16em;
+    }
+
+    .target-block {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border-bottom: 1px solid rgba(19, 34, 45, 0.08);
+    }
+
+    .target-word {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-size: clamp(1.5rem, 5.8vw, 2.35rem);
+      font-weight: 800;
+      color: var(--accent-strong);
+      line-height: 1.2;
+    }
+
+    .target-word::before {
+      content: "";
+      width: 0.72rem;
+      height: 0.72rem;
+      border-radius: 999px;
+      background: var(--accent-warm);
+      box-shadow: 0 0 0 0.45rem rgba(245, 158, 11, 0.16);
+      flex: none;
+    }
+
+    .target-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .quiz-block {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .quiz-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(28, 102, 133, 0.12);
+      color: var(--accent-strong);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .step-pill::before {
+      content: "";
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.44rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(19, 34, 45, 0.08);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .step-trail {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .trail-item {
+      padding: 0.43rem 0.72rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(19, 34, 45, 0.08);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .trail-item.active {
+      background: var(--accent-strong);
+      border-color: transparent;
+      color: white;
+    }
+
+    .trail-item.done {
+      background: rgba(17, 130, 93, 0.12);
+      border-color: rgba(17, 130, 93, 0.18);
+      color: var(--success);
+    }
+
+    .prompt {
+      margin: 0;
+      font-size: clamp(1.08rem, 3.6vw, 1.38rem);
+      font-weight: 800;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .choice-btn,
+    .action-btn {
+      appearance: none;
+      border: none;
+      font: inherit;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
+
+    .choice-btn {
+      min-height: 58px;
+      padding: 14px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(19, 34, 45, 0.14);
+      background: linear-gradient(180deg, #fff, #faf6ef);
+      color: var(--ink);
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.35;
+      box-shadow: 0 10px 22px rgba(19, 34, 45, 0.05);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .choice-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(28, 102, 133, 0.36);
+      box-shadow: 0 16px 30px rgba(19, 34, 45, 0.08);
+    }
+
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: rgba(28, 102, 133, 0.08);
+      color: var(--accent-strong);
+    }
+
+    .choice-btn.correct {
+      border-color: rgba(17, 130, 93, 0.35);
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .choice-btn.wrong {
+      border-color: rgba(187, 62, 62, 0.35);
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .choice-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.92;
+    }
+
+    .feedback {
+      padding: 16px 16px 18px;
+      border-top: 1px solid rgba(19, 34, 45, 0.08);
+      background: rgba(255, 255, 255, 0.76);
+      min-height: 104px;
+      transition: background 0.15s ease;
+    }
+
+    .feedback strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .feedback p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .feedback.success {
+      background: linear-gradient(180deg, rgba(17, 130, 93, 0.09), rgba(255, 255, 255, 0.78));
+    }
+
+    .feedback.fail {
+      background: linear-gradient(180deg, rgba(187, 62, 62, 0.09), rgba(255, 255, 255, 0.78));
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 18px 18px;
+    }
+
+    .action-btn {
+      min-height: 54px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 0.98rem;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .action-btn.secondary {
+      background: rgba(28, 102, 133, 0.10);
+      color: var(--accent-strong);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: white;
+      box-shadow: 0 14px 28px rgba(28, 102, 133, 0.22);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .results {
+      display: none;
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .results.show {
+      display: grid;
+    }
+
+    .results-head {
+      display: grid;
+      gap: 8px;
+    }
+
+    .results-head h2 {
+      margin: 0;
+      font-family: "Noto Serif JP", "Yu Mincho", serif;
+      font-size: clamp(1.45rem, 5vw, 2.1rem);
+      line-height: 1.25;
+    }
+
+    .results-summary {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .summary-card {
+      padding: 14px 14px 15px;
+      border-radius: 18px;
+      border: 1px solid rgba(19, 34, 45, 0.09);
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .summary-card .label {
+      margin: 0 0 7px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .summary-card .value {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .review-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .review-item {
+      padding: 14px 14px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(19, 34, 45, 0.09);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .review-item h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .review-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .review-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 10px;
+    }
+
+    .review-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.36rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(28, 102, 133, 0.08);
+      border: 1px solid rgba(28, 102, 133, 0.12);
+      color: var(--accent-strong);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      padding: 0 18px 18px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 720px) {
+      .app {
+        padding-top: 28px;
+      }
+
+      .hero {
+        padding: 18px 10px 26px;
+      }
+
+      .quiz-block {
+        padding: 20px 22px 18px;
+      }
+
+      .target-block {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+      }
+
+      .target-note {
+        max-width: 32rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="eyebrow">KOTEN BUNPO QUIZ</div>
+      <h1><span class="title-line">古典文法を、</span><span class="title-line">一語ずつ判別。</span></h1>
+      <div class="badges">
+        <span class="badge">動詞</span>
+        <span class="badge">形容詞</span>
+        <span class="badge">形容動詞</span>
+        <span class="badge">助動詞</span>
+        <span class="badge">助詞</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card import-card" aria-label="自作CSVの読み込み">
+        <div class="import-head">
+          <p class="import-title">自作CSVを読み込む</p>
+          <span class="meta-chip" id="questionSourceChip">内蔵問題</span>
+        </div>
+        <p class="import-help">CSVを選択すると、内蔵問題を上書きして自作問題で開始します。必須列は「sentence,target,pos」です。</p>
+        <div class="file-row">
+          <input class="file-input" id="csvInput" type="file" accept=".csv,text/csv" />
+          <label class="file-label" for="csvInput">CSVを選択</label>
+          <button class="action-btn secondary" id="resetBuiltInBtn" type="button">内蔵問題に戻す</button>
+          <button class="action-btn secondary hidden" id="resumeSaveBtn" type="button">続きから再開</button>
+          <button class="action-btn secondary hidden" id="clearSaveBtn" type="button">保存を削除</button>
+        </div>
+        <p class="import-status" id="importStatus">未選択です。列名は英語でも日本語でも読み込めます。</p>
+      </section>
+
+      <section class="card" id="quizCard" aria-live="polite">
+        <div class="sentence-block">
+          <div class="section-label">文章</div>
+          <p class="sentence" id="sentenceText"></p>
+        </div>
+
+        <div class="target-block">
+          <div>
+            <div class="section-label">判別する単語</div>
+            <div class="target-word" id="targetWord"></div>
+          </div>
+          <p class="target-note">判別対象の語は、本文中で青く強調表示されます。</p>
+        </div>
+
+        <div class="quiz-block">
+          <div class="quiz-top">
+            <span class="step-pill" id="stepPill">問題 1 / 1</span>
+            <div class="meta-row">
+              <span class="meta-chip" id="questionChip">第 1 問</span>
+              <span class="meta-chip" id="scoreChip">正答 0 / 0</span>
+            </div>
+          </div>
+
+          <div class="step-trail" id="stepTrail"></div>
+          <p class="prompt" id="promptText"></p>
+          <div class="choices" id="choices"></div>
+        </div>
+
+        <div class="feedback" id="feedbackBox">
+          <strong>問題を選ぶと、ここに正解と解説が出ます。</strong>
+          <p>選択式なので、まずはざっくり答えてみてください。間違えてもその場で答えを確認できます。</p>
+        </div>
+
+        <div class="actions">
+          <button class="action-btn secondary" id="skipBtn" type="button">答えを見る</button>
+          <button class="action-btn primary" id="nextBtn" type="button" disabled>次へ</button>
+        </div>
+
+        <div class="footer-note" id="footerNote">
+          品詞 → 活用の種類 → 活用形、助詞は 品詞 → 助詞の種類 → 意味 → 接続形、助動詞は 品詞 → 活用形 → 意味 の順で答えます。
+        </div>
+      </section>
+
+      <section class="card results" id="resultsCard" aria-live="polite">
+        <div class="results-head">
+          <div class="eyebrow">RESULT</div>
+          <h2>おつかれさまでした。復習用に、今回の答えをまとめました。</h2>
+        </div>
+
+        <div class="results-summary" id="resultsSummary"></div>
+        <div class="review-list" id="reviewList"></div>
+
+        <div class="actions" style="padding: 0;">
+          <button class="action-btn secondary" id="restartBtn" type="button">もう一周する</button>
+          <button class="action-btn primary" id="retryMistakesBtn" type="button">間違えた問題だけ</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const POS_OPTIONS = ["動詞", "形容詞", "形容動詞", "助詞", "助動詞"];
+    const PARTICLE_TYPES = ["格助詞", "接続助詞", "副助詞", "係助詞", "終助詞", "間投助詞"];
+    const VERB_CONJUGATION_TYPES = ["四段活用", "下一段活用", "下二段活用", "上一段活用", "上二段活用", "カ行変格活用", "サ行変格活用", "ナ行変格活用", "マ行変格活用"];
+    const ADJECTIVE_CONJUGATION_TYPES = ["ク活用", "シク活用"];
+    const ADJECTIVAL_NOUN_CONJUGATION_TYPES = ["ナリ活用", "タリ活用"];
+    const CONJUGATION_FORMS = ["未然形", "連用形", "終止形", "連体形", "已然形", "命令形"];
+    const PARTICLE_CONNECTIONS = ["体言", "連体形", "連用形", "未然形", "已然形", "終止形", "種々の語"];
+    const PARTICLE_MEANINGS = ["対象", "起点", "経由", "場所", "時間", "原因", "理由", "手段", "比較", "並列", "限定", "強調", "添加", "例示", "詠嘆", "呼びかけ", "疑問", "反語", "仮定条件", "確定条件", "順接確定条件", "逆接確定条件", "逆接仮定条件"];
+    const AUXILIARY_MEANINGS = ["過去", "完了", "存続", "推量", "意志", "可能", "受身", "尊敬", "自発", "打消", "打消推量", "希望", "断定", "伝聞", "推定", "比況", "当然", "適当", "勧誘", "命令", "婉曲"];
+
+    function makeMeaningChoices(answer, pool, count = 4) {
+      const uniquePool = [...new Set(pool)].filter((item) => item && item !== answer);
+      return shuffle([answer, ...shuffle(uniquePool).slice(0, Math.max(0, count - 1))]);
+    }
+
+    const QUESTIONS = [
+      {
+        sentence: "春、山に花咲く。",
+        target: "咲く",
+        pos: "動詞",
+        conjugationType: "四段活用",
+        conjugationForm: "終止形",
+        note: "文末で言い切っているので終止形です。",
+      },
+      {
+        sentence: "都を見る人あり。",
+        target: "見る",
+        pos: "動詞",
+        conjugationType: "上一段活用",
+        conjugationForm: "連体形",
+        note: "『見る人』と後ろの名詞を修飾しているので連体形です。",
+      },
+      {
+        sentence: "雪は白し。",
+        target: "白し",
+        pos: "形容詞",
+        conjugationType: "シク活用",
+        conjugationForm: "終止形",
+        note: "『白し』は形容詞。文末なので終止形です。",
+      },
+      {
+        sentence: "高き山に雪ふる。",
+        target: "高き",
+        pos: "形容詞",
+        conjugationType: "ク活用",
+        conjugationForm: "連体形",
+        note: "『高き山』のように名詞を修飾しているので連体形です。",
+      },
+      {
+        sentence: "都は静かなり。",
+        target: "静かなり",
+        pos: "形容動詞",
+        conjugationType: "ナリ活用",
+        conjugationForm: "終止形",
+        note: "『静かなり』は形容動詞。文末なので終止形です。",
+      },
+      {
+        sentence: "あはれなる人あり。",
+        target: "あはれなる",
+        pos: "形容動詞",
+        conjugationType: "ナリ活用",
+        conjugationForm: "連体形",
+        note: "『あはれなる人』と名詞を修飾しているので連体形です。",
+      },
+      {
+        sentence: "花は春なり。",
+        target: "なり",
+        pos: "助動詞",
+        conjugationType: "ナリ活用",
+        conjugationTypeChoices: ["ナリ活用", "タリ活用"],
+        conjugationForm: "終止形",
+        auxiliaryMeaning: "断定",
+        auxiliaryMeaningChoices: ["断定", "完了", "過去", "推量"],
+        note: "断定の助動詞『なり』です。ここでは終止形。",
+      },
+      {
+        sentence: "花咲きたり。",
+        target: "たり",
+        pos: "助動詞",
+        conjugationType: "タリ活用",
+        conjugationTypeChoices: ["タリ活用", "ナリ活用"],
+        conjugationForm: "終止形",
+        auxiliaryMeaning: "完了",
+        auxiliaryMeaningChoices: ["完了", "断定", "過去", "推量"],
+        note: "完了の助動詞『たり』です。文末なので終止形。",
+      },
+      {
+        sentence: "花を見る。",
+        target: "を",
+        pos: "助詞",
+        particleType: "格助詞",
+        particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
+        particleMeaning: "対象",
+        meaningChoices: ["対象", "起点", "場所", "強調"],
+        particleConnection: "体言",
+        connectionChoices: ["体言", "連体形", "連用形", "已然形"],
+        note: "『花』を『見る』対象として示しています。",
+      },
+      {
+        sentence: "都にて花を見る。",
+        target: "にて",
+        pos: "助詞",
+        particleType: "格助詞",
+        particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
+        particleMeaning: "場所",
+        meaningChoices: ["場所", "対象", "起点", "強調"],
+        particleConnection: "体言",
+        connectionChoices: ["体言", "連体形", "連用形", "已然形"],
+        note: "この『にて』は場所を表します。",
+      },
+      {
+        sentence: "花こそ咲け。",
+        target: "こそ",
+        pos: "助詞",
+        particleType: "係助詞",
+        particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
+        particleMeaning: "強調",
+        meaningChoices: ["強調", "対象", "場所", "起点"],
+        particleConnection: "体言",
+        connectionChoices: ["体言", "連体形", "連用形", "已然形"],
+        kakariTargetForm: "已然形",
+        note: "『こそ』は係助詞で、文を強く押し出す働きがあります。",
+      },
+      {
+        sentence: "雨降れば出で立つ。",
+        target: "ば",
+        pos: "助詞",
+        particleType: "接続助詞",
+        particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
+        particleMeaning: "確定条件",
+        meaningChoices: ["確定条件", "仮定条件", "対象", "強調"],
+        particleConnection: "已然形",
+        connectionChoices: ["已然形", "未然形", "連用形", "体言"],
+        note: "『降れ』は已然形。已然形＋ばなので、ここでは確定条件を表します。",
+      },
+      {
+        sentence: "都より来たり。",
+        target: "より",
+        pos: "助詞",
+        particleType: "格助詞",
+        particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
+        particleMeaning: "起点",
+        meaningChoices: ["起点", "対象", "場所", "強調"],
+        particleConnection: "体言",
+        connectionChoices: ["体言", "連体形", "連用形", "已然形"],
+        note: "ここでは『都から』という起点を表します。",
+      }
+    ];
+
+    const elements = {
+      sentenceText: document.getElementById("sentenceText"),
+      targetWord: document.getElementById("targetWord"),
+      stepPill: document.getElementById("stepPill"),
+      questionChip: document.getElementById("questionChip"),
+      scoreChip: document.getElementById("scoreChip"),
+      stepTrail: document.getElementById("stepTrail"),
+      promptText: document.getElementById("promptText"),
+      choices: document.getElementById("choices"),
+      feedbackBox: document.getElementById("feedbackBox"),
+      skipBtn: document.getElementById("skipBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      footerNote: document.getElementById("footerNote"),
+      quizCard: document.getElementById("quizCard"),
+      resultsCard: document.getElementById("resultsCard"),
+      resultsSummary: document.getElementById("resultsSummary"),
+      reviewList: document.getElementById("reviewList"),
+      restartBtn: document.getElementById("restartBtn"),
+      csvInput: document.getElementById("csvInput"),
+      importStatus: document.getElementById("importStatus"),
+      questionSourceChip: document.getElementById("questionSourceChip"),
+      resetBuiltInBtn: document.getElementById("resetBuiltInBtn"),
+      resumeSaveBtn: document.getElementById("resumeSaveBtn"),
+      clearSaveBtn: document.getElementById("clearSaveBtn"),
+      retryMistakesBtn: document.getElementById("retryMistakesBtn"),
+    };
+
+    const APP_VERSION = "1.5.0";
+    const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
+    const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
+
+    let activeQuestionBank = [...QUESTIONS];
+    let activeQuestionSource = "内蔵問題";
+    let suspendAutoSave = false;
+
+    const state = {
+      questions: [],
+      questionIndex: 0,
+      stepIndex: 0,
+      stepChoices: [],
+      stepLocked: false,
+      currentSteps: [],
+      currentResponses: [],
+      totalAnswered: 0,
+      totalCorrect: 0,
+      questionResults: [],
+      completedQuestions: 0,
+    };
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function saveCustomQuestions() {
+      try {
+        if (activeQuestionSource === "内蔵問題") {
+          localStorage.removeItem(CUSTOM_KEY);
+          return;
+        }
+        localStorage.setItem(CUSTOM_KEY, JSON.stringify({
+          version: APP_VERSION,
+          source: activeQuestionSource,
+          questions: activeQuestionBank,
+          savedAt: new Date().toISOString(),
+        }));
+      } catch (error) {
+        console.warn("自作問題の保存に失敗しました。", error);
+      }
+    }
+
+    function loadCustomQuestions() {
+      try {
+        const raw = localStorage.getItem(CUSTOM_KEY);
+        if (!raw) {
+          return false;
+        }
+        const saved = JSON.parse(raw);
+        if (!Array.isArray(saved.questions) || !saved.questions.length) {
+          return false;
+        }
+        activeQuestionBank = saved.questions;
+        activeQuestionSource = saved.source || `保存済み自作問題 ${saved.questions.length}問`;
+        elements.questionSourceChip.textContent = activeQuestionSource;
+        elements.importStatus.textContent = `保存済みの自作問題 ${saved.questions.length}問を読み込みました。`;
+        return true;
+      } catch (error) {
+        console.warn("保存済み自作問題の読み込みに失敗しました。", error);
+        return false;
+      }
+    }
+
+    function saveProgress() {
+      if (suspendAutoSave || !state.questions.length) {
+        return;
+      }
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({
+          version: APP_VERSION,
+          savedAt: new Date().toISOString(),
+          activeQuestionSource,
+          activeQuestionBank,
+          state: {
+            questions: state.questions,
+            questionIndex: state.questionIndex,
+            stepIndex: state.stepIndex,
+            stepLocked: state.stepLocked,
+            currentSteps: state.currentSteps,
+            currentResponses: state.currentResponses,
+            totalAnswered: state.totalAnswered,
+            totalCorrect: state.totalCorrect,
+            questionResults: state.questionResults,
+            completedQuestions: state.completedQuestions,
+          },
+        }));
+      } catch (error) {
+        console.warn("学習状況の保存に失敗しました。", error);
+      }
+    }
+
+    function getSavedProgress() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function clearSavedProgress() {
+      localStorage.removeItem(SAVE_KEY);
+      updateSaveButtons();
+    }
+
+    function updateSaveButtons() {
+      const hasSave = Boolean(getSavedProgress());
+      elements.resumeSaveBtn.classList.toggle("hidden", !hasSave);
+      elements.clearSaveBtn.classList.toggle("hidden", !hasSave);
+    }
+
+    function restoreProgress(saved) {
+      if (!saved || !saved.state || !Array.isArray(saved.state.questions) || !saved.state.questions.length) {
+        return false;
+      }
+      suspendAutoSave = true;
+      activeQuestionBank = Array.isArray(saved.activeQuestionBank) && saved.activeQuestionBank.length ? saved.activeQuestionBank : [...QUESTIONS];
+      activeQuestionSource = saved.activeQuestionSource || "保存済み問題";
+      elements.questionSourceChip.textContent = activeQuestionSource;
+
+      state.questions = saved.state.questions;
+      state.questionIndex = Math.min(saved.state.questionIndex || 0, state.questions.length - 1);
+      state.stepIndex = saved.state.stepIndex || 0;
+      state.stepLocked = Boolean(saved.state.stepLocked);
+      state.currentSteps = Array.isArray(saved.state.currentSteps) && saved.state.currentSteps.length
+        ? saved.state.currentSteps
+        : buildSteps(state.questions[state.questionIndex]);
+      state.currentResponses = Array.isArray(saved.state.currentResponses) ? saved.state.currentResponses : [];
+      state.totalAnswered = saved.state.totalAnswered || 0;
+      state.totalCorrect = saved.state.totalCorrect || 0;
+      state.questionResults = Array.isArray(saved.state.questionResults) ? saved.state.questionResults : [];
+      state.completedQuestions = saved.state.completedQuestions || 0;
+
+      elements.resultsCard.classList.remove("show");
+      elements.quizCard.classList.remove("hidden");
+      updateScoreChip();
+      renderStep();
+
+      if (state.stepLocked) {
+        const step = currentStep();
+        const question = currentQuestion();
+        const response = state.currentResponses[state.currentResponses.length - 1];
+        lockChoices(step, response && response.selected);
+        setFeedback({
+          correct: response ? response.isCorrect : false,
+          selected: response ? response.selected : null,
+          step,
+          question,
+          skipped: response ? response.selected === null : false,
+        });
+        elements.nextBtn.disabled = false;
+        elements.nextBtn.textContent = nextButtonLabel();
+        elements.skipBtn.disabled = true;
+      }
+
+      elements.importStatus.textContent = "前回の続きから再開しました。";
+      suspendAutoSave = false;
+      saveProgress();
+      return true;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function shuffle(items) {
+      const next = [...items];
+      for (let i = next.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+      return next;
+    }
+
+    function conjugationTypeOptionsFor(pos) {
+      if (pos === "動詞") {
+        return VERB_CONJUGATION_TYPES;
+      }
+      if (pos === "形容詞") {
+        return ADJECTIVE_CONJUGATION_TYPES;
+      }
+      if (pos === "形容動詞") {
+        return ADJECTIVAL_NOUN_CONJUGATION_TYPES;
+      }
+      return [];
+    }
+
+    function makeSentenceHtml(sentence, target) {
+      const index = sentence.indexOf(target);
+      if (index < 0) {
+        return escapeHtml(sentence);
+      }
+      const before = escapeHtml(sentence.slice(0, index));
+      const match = escapeHtml(sentence.slice(index, index + target.length));
+      const after = escapeHtml(sentence.slice(index + target.length));
+      return `${before}<span class="target-highlight">${match}</span>${after}`;
+    }
+
+    function buildSteps(question) {
+      const steps = [];
+
+      steps.push({
+        key: "pos",
+        label: "品詞",
+        prompt: "この語の品詞は？",
+        answer: question.pos,
+        choices: POS_OPTIONS,
+      });
+
+      if (question.pos === "助詞") {
+        steps.push({
+          key: "particleType",
+          label: "助詞の種類",
+          prompt: "この助詞は何助詞？",
+          answer: question.particleType,
+          choices: PARTICLE_TYPES,
+        });
+        steps.push({
+          key: "meaning",
+          label: "意味",
+          prompt: "この助詞の意味は？",
+          answer: question.particleMeaning,
+          choices: makeMeaningChoices(question.particleMeaning, PARTICLE_MEANINGS),
+        });
+        steps.push({
+          key: "particleConnection",
+          label: "接続形",
+          prompt: "この助詞は何に接続している？",
+          answer: question.particleConnection,
+          choices: question.connectionChoices || PARTICLE_CONNECTIONS,
+        });
+        if (question.particleType === "係助詞" && question.kakariTargetForm) {
+          steps.push({
+            key: "kakariTargetForm",
+            label: "係り先の活用形",
+            prompt: "係り先の活用形は？",
+            answer: question.kakariTargetForm,
+            choices: CONJUGATION_FORMS,
+          });
+        }
+      } else if (question.pos === "助動詞") {
+        steps.push({
+          key: "conjugationForm",
+          label: "活用形",
+          prompt: "この助動詞の活用形は？",
+          answer: question.conjugationForm,
+          choices: CONJUGATION_FORMS,
+        });
+        steps.push({
+          key: "auxiliaryMeaning",
+          label: "意味",
+          prompt: "この助動詞の意味は？",
+          answer: question.auxiliaryMeaning,
+          choices: makeMeaningChoices(question.auxiliaryMeaning, AUXILIARY_MEANINGS),
+        });
+      } else {
+        steps.push({
+          key: "conjugationType",
+          label: "活用の種類",
+          prompt: "活用の種類は？",
+          answer: question.conjugationType,
+          choices: conjugationTypeOptionsFor(question.pos),
+        });
+        steps.push({
+          key: "conjugationForm",
+          label: "活用形",
+          prompt: "活用形は？",
+          answer: question.conjugationForm,
+          choices: CONJUGATION_FORMS,
+        });
+      }
+
+      return steps;
+    }
+
+    function createReviewText(question) {
+      if (question.pos === "助詞") {
+        const kakariText = question.kakariTargetForm ? ` / 係り先: ${question.kakariTargetForm}` : "";
+        return `品詞: ${question.pos} / ${question.particleType} / 意味: ${question.particleMeaning} / 接続: ${question.particleConnection}${kakariText}`;
+      }
+      if (question.pos === "助動詞") {
+        return `品詞: ${question.pos} / ${question.conjugationForm} / 意味: ${question.auxiliaryMeaning}`;
+      }
+      return `品詞: ${question.pos} / ${question.conjugationType} / ${question.conjugationForm}`;
+    }
+
+    function currentQuestion() {
+      return state.questions[state.questionIndex];
+    }
+
+    function currentStep() {
+      return state.currentSteps[state.stepIndex];
+    }
+
+    function updateScoreChip() {
+      elements.scoreChip.textContent = `正答 ${state.totalCorrect} / ${state.totalAnswered}`;
+    }
+
+    function nextButtonLabel() {
+      const isLastStep = state.stepIndex === state.currentSteps.length - 1;
+      const isLastQuestion = state.questionIndex === state.questions.length - 1;
+      if (!isLastStep) {
+        return "次へ";
+      }
+      return isLastQuestion ? "結果を見る" : "次の問題";
+    }
+
+    function renderStepTrail() {
+      const steps = state.currentSteps;
+      elements.stepTrail.innerHTML = steps
+        .map((step, index) => {
+          let cls = "trail-item";
+          if (index < state.stepIndex) {
+            cls += " done";
+          } else if (index === state.stepIndex) {
+            cls += " active";
+          }
+          return `<span class="${cls}">${escapeHtml(step.label)}</span>`;
+        })
+        .join("");
+    }
+
+    function stepExplanation(step, question) {
+      switch (step.key) {
+        case "pos":
+          return `『${question.target}』は ${question.pos} です。`;
+        case "particleType":
+          return `『${question.target}』は ${question.particleType} に分類されます。`;
+        case "meaning":
+          return `ここでは「${question.particleMeaning}」の意味で使われています。`;
+        case "particleConnection":
+          return `この助詞は ${question.particleConnection} に接続しています。${question.note ? " " + question.note : ""}`;
+        case "kakariTargetForm":
+          return `係助詞の係り先は ${question.kakariTargetForm} になります。${question.note ? " " + question.note : ""}`;
+        case "conjugationType":
+          return `『${question.target}』は ${question.conjugationType} です。`;
+        case "conjugationForm":
+          return `この文では ${question.conjugationForm} です。${question.note ? " " + question.note : ""}`;
+        case "auxiliaryMeaning":
+          return `ここでは「${question.auxiliaryMeaning}」の意味で使われています。${question.note ? " " + question.note : ""}`;
+        default:
+          return question.note || "";
+      }
+    }
+
+    function setFeedback({ correct, selected, step, question, skipped = false }) {
+      elements.feedbackBox.classList.toggle("success", correct);
+      elements.feedbackBox.classList.toggle("fail", !correct);
+
+      const title = skipped
+        ? "答えを表示しました。確認してから次へ進みましょう。"
+        : correct
+          ? "正解です。"
+          : "惜しいです。答えを確認しましょう。";
+
+      const selectedText = skipped
+        ? "答えを表示"
+        : `あなたの答え: ${selected || "なし"}`;
+
+      elements.feedbackBox.innerHTML = `
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(selectedText)}</p>
+        <p>正解: ${escapeHtml(step.answer)}</p>
+        <p>${escapeHtml(stepExplanation(step, question))}</p>
+      `;
+    }
+
+    function lockChoices(step, chosen) {
+      const buttons = [...elements.choices.querySelectorAll("button")];
+      buttons.forEach((button) => {
+        button.disabled = true;
+        if (chosen && button.dataset.choice === chosen) {
+          button.classList.add("selected");
+        }
+        if (button.dataset.choice === step.answer) {
+          button.classList.add("correct");
+        }
+        if (chosen && button.dataset.choice === chosen && chosen !== step.answer) {
+          button.classList.add("wrong");
+        }
+      });
+    }
+
+    function renderStep() {
+      const question = currentQuestion();
+      const step = currentStep();
+
+      elements.quizCard.classList.remove("hidden");
+      elements.resultsCard.classList.remove("show");
+
+      elements.sentenceText.innerHTML = makeSentenceHtml(question.sentence, question.target);
+      elements.targetWord.textContent = question.target;
+      elements.stepPill.textContent = `STEP ${state.stepIndex + 1} / ${state.currentSteps.length}`;
+      elements.questionChip.textContent = `第 ${state.questionIndex + 1} 問 / ${state.questions.length}`;
+      elements.promptText.textContent = step.prompt;
+      if (question.pos === "助詞") {
+        elements.footerNote.textContent = question.particleType === "係助詞"
+          ? "品詞 → 助詞の種類 → 意味 → 接続形 → 係り先の活用形 の順で答えます。"
+          : "品詞 → 助詞の種類 → 意味 → 接続形 の順で答えます。";
+      } else if (question.pos === "助動詞") {
+        elements.footerNote.textContent = "品詞 → 活用形 → 意味 の順で答えます。";
+      } else {
+        elements.footerNote.textContent = "品詞 → 活用の種類 → 活用形 の順で答えます。";
+      }
+
+      renderStepTrail();
+
+      elements.choices.innerHTML = "";
+      step.choices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice-btn";
+        button.textContent = choice;
+        button.dataset.choice = choice;
+        button.addEventListener("click", () => handleChoice(choice));
+        elements.choices.appendChild(button);
+      });
+
+      elements.feedbackBox.classList.remove("success", "fail");
+      elements.feedbackBox.innerHTML = `
+        <strong>本文と判別対象の語を見くらべて、選択してください。</strong>
+        <p>選ぶと、正解と解説がすぐ表示されます。迷う場合は「答えを見る」で確認できます。</p>
+      `;
+
+      elements.nextBtn.disabled = true;
+      elements.nextBtn.textContent = nextButtonLabel();
+      elements.skipBtn.disabled = false;
+      state.stepLocked = false;
+    }
+
+    function handleChoice(choice, skipped = false) {
+      if (state.stepLocked) {
+        return;
+      }
+
+      const question = currentQuestion();
+      const step = currentStep();
+      state.stepLocked = true;
+
+      const correct = choice === step.answer;
+      state.totalAnswered += 1;
+      if (correct) {
+        state.totalCorrect += 1;
+      }
+
+      state.currentResponses.push({
+        key: step.key,
+        label: step.label,
+        selected: skipped ? null : choice,
+        correct: step.answer,
+        isCorrect: correct,
+      });
+
+      lockChoices(step, skipped ? null : choice);
+      setFeedback({ correct, selected: skipped ? null : choice, step, question, skipped });
+      updateScoreChip();
+
+      elements.nextBtn.disabled = false;
+      elements.nextBtn.textContent = nextButtonLabel();
+      saveProgress();
+      updateSaveButtons();
+    }
+
+    function goNext() {
+      if (!state.stepLocked) {
+        return;
+      }
+
+      if (state.stepIndex < state.currentSteps.length - 1) {
+        state.stepIndex += 1;
+        renderStep();
+        saveProgress();
+        return;
+      }
+
+      const question = currentQuestion();
+      const perfect = state.currentResponses.every((item) => item.isCorrect);
+      state.questionResults.push({
+        question,
+        perfect,
+        responses: [...state.currentResponses],
+      });
+      state.completedQuestions += 1;
+
+      if (state.questionIndex < state.questions.length - 1) {
+        state.questionIndex += 1;
+        state.stepIndex = 0;
+        state.currentSteps = buildSteps(currentQuestion());
+        state.currentResponses = [];
+        renderStep();
+        saveProgress();
+        return;
+      }
+
+      showResults();
+      saveProgress();
+    }
+
+    function showResults() {
+      elements.quizCard.classList.add("hidden");
+      elements.resultsCard.classList.add("show");
+
+      const totalQuestions = state.questions.length;
+      const totalSteps = state.questionResults.reduce((sum, record) => sum + record.responses.length, 0);
+      const correctSteps = state.totalCorrect;
+      const accuracy = totalSteps ? Math.round((correctSteps / totalSteps) * 100) : 0;
+      const perfectQuestions = state.questionResults.filter((record) => record.perfect).length;
+      const mistakeQuestions = state.questionResults.filter((record) => !record.perfect).length;
+      elements.retryMistakesBtn.disabled = mistakeQuestions === 0;
+
+      elements.resultsSummary.innerHTML = `
+        <div class="summary-card">
+          <div class="label">正答率</div>
+          <p class="value">${accuracy}%</p>
+        </div>
+        <div class="summary-card">
+          <div class="label">正解ステップ</div>
+          <p class="value">${correctSteps} / ${totalSteps}</p>
+        </div>
+        <div class="summary-card">
+          <div class="label">満点の問題</div>
+          <p class="value">${perfectQuestions} / ${totalQuestions}</p>
+        </div>
+      `;
+
+      elements.reviewList.innerHTML = state.questionResults
+        .map((record, index) => {
+          const question = record.question;
+          const reviewText = createReviewText(question);
+          const responseTags = record.responses
+            .map((response) => {
+              const label = response.isCorrect ? "正解" : "要復習";
+              const displaySelected = response.selected === null ? "スキップ" : response.selected;
+              return `<span class="review-pill" style="background:${response.isCorrect ? "rgba(17, 130, 93, 0.08)" : "rgba(187, 62, 62, 0.08)"};border-color:${response.isCorrect ? "rgba(17, 130, 93, 0.15)" : "rgba(187, 62, 62, 0.15)"};color:${response.isCorrect ? "var(--success)" : "var(--danger)"};">${escapeHtml(label)}: ${escapeHtml(response.label)} / ${escapeHtml(displaySelected)} → ${escapeHtml(response.correct)}</span>`;
+            })
+            .join("");
+
+          return `
+            <article class="review-item">
+              <h3>問題 ${index + 1}: ${escapeHtml(question.target)} を見つける</h3>
+              <p>${escapeHtml(question.sentence)}</p>
+              <div class="review-meta">
+                <span class="review-pill">${escapeHtml(reviewText)}</span>
+              </div>
+              <div class="review-meta" style="margin-top: 8px;">
+                ${responseTags}
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
+      elements.scoreChip.textContent = `正答 ${state.totalCorrect} / ${state.totalAnswered}`;
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let field = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            field += '"';
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+
+        if (char === "," && !inQuotes) {
+          row.push(field);
+          field = "";
+          continue;
+        }
+
+        if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") {
+            i += 1;
+          }
+          row.push(field);
+          if (row.some((cell) => cell.trim() !== "")) {
+            rows.push(row);
+          }
+          row = [];
+          field = "";
+          continue;
+        }
+
+        field += char;
+      }
+
+      row.push(field);
+      if (row.some((cell) => cell.trim() !== "")) {
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function normalizeHeader(value) {
+      return String(value || "").trim().replace(/^\uFEFF/, "");
+    }
+
+    const CSV_FIELD_ALIASES = {
+      sentence: ["sentence", "本文", "文章", "例文", "文"],
+      target: ["target", "対象語", "語", "単語", "判別する単語"],
+      pos: ["pos", "品詞"],
+      conjugationType: ["conjugationType", "活用の種類", "活用種類"],
+      conjugationForm: ["conjugationForm", "活用形"],
+      particleType: ["particleType", "助詞の種類", "助詞種類"],
+      particleMeaning: ["particleMeaning", "助詞の意味", "意味"],
+      particleConnection: ["particleConnection", "接続形", "接続"],
+      kakariTargetForm: ["kakariTargetForm", "係り先の活用形", "係り先", "係り結び"],
+      auxiliaryMeaning: ["auxiliaryMeaning", "助動詞の意味", "意味"],
+      note: ["note", "解説", "メモ", "補足"],
+    };
+
+    function makeHeaderMap(headers) {
+      const normalized = headers.map(normalizeHeader);
+      const map = {};
+      Object.entries(CSV_FIELD_ALIASES).forEach(([field, aliases]) => {
+        const index = normalized.findIndex((header) => aliases.includes(header));
+        if (index >= 0 && map[field] === undefined) {
+          map[field] = index;
+        }
+      });
+      return map;
+    }
+
+    function cell(row, index) {
+      return index === undefined ? "" : String(row[index] || "").trim();
+    }
+
+    function normalizeQuestion(raw) {
+      const question = { ...raw };
+      if (question.pos === "助詞") {
+        question.particleType = question.particleType || "格助詞";
+        question.particleMeaning = question.particleMeaning || "対象";
+        question.particleConnection = question.particleConnection || "体言";
+      } else if (question.pos === "助動詞") {
+        question.conjugationForm = question.conjugationForm || "終止形";
+        question.auxiliaryMeaning = question.auxiliaryMeaning || question.particleMeaning || "推量";
+      } else {
+        question.conjugationType = question.conjugationType || conjugationTypeOptionsFor(question.pos)[0] || "四段活用";
+        question.conjugationForm = question.conjugationForm || "終止形";
+      }
+      question.note = question.note || "CSVから読み込んだ自作問題です。";
+      return question;
+    }
+
+    function questionsFromCsv(csvText) {
+      const rows = parseCsv(csvText);
+      if (rows.length < 2) {
+        throw new Error("CSVにヘッダー行と問題行が必要です。");
+      }
+
+      const headerMap = makeHeaderMap(rows[0]);
+      const required = ["sentence", "target", "pos"];
+      const missing = required.filter((field) => headerMap[field] === undefined);
+      if (missing.length) {
+        throw new Error("必須列 sentence / target / pos が見つかりません。");
+      }
+
+      const parsed = rows.slice(1).map((row, index) => {
+        const raw = {
+          sentence: cell(row, headerMap.sentence),
+          target: cell(row, headerMap.target),
+          pos: cell(row, headerMap.pos),
+          conjugationType: cell(row, headerMap.conjugationType),
+          conjugationForm: cell(row, headerMap.conjugationForm),
+          particleType: cell(row, headerMap.particleType),
+          particleMeaning: cell(row, headerMap.particleMeaning),
+          particleConnection: cell(row, headerMap.particleConnection),
+          kakariTargetForm: cell(row, headerMap.kakariTargetForm),
+          auxiliaryMeaning: cell(row, headerMap.auxiliaryMeaning),
+          note: cell(row, headerMap.note),
+        };
+
+        if (!raw.sentence || !raw.target || !raw.pos) {
+          throw new Error(`${index + 2}行目に sentence / target / pos の空欄があります。`);
+        }
+        if (!POS_OPTIONS.includes(raw.pos)) {
+          throw new Error(`${index + 2}行目の品詞「${raw.pos}」は未対応です。`);
+        }
+        return normalizeQuestion(raw);
+      });
+
+      if (!parsed.length) {
+        throw new Error("読み込める問題がありません。");
+      }
+      return parsed;
+    }
+
+    function setQuestionBank(questions, sourceLabel) {
+      activeQuestionBank = questions;
+      activeQuestionSource = sourceLabel;
+      elements.questionSourceChip.textContent = sourceLabel;
+      saveCustomQuestions();
+      clearSavedProgress();
+      startQuiz();
+    }
+
+    function readCsvFile(file) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        try {
+          const parsed = questionsFromCsv(String(reader.result || ""));
+          setQuestionBank(parsed, `自作CSV ${parsed.length}問`);
+          elements.importStatus.textContent = `${file.name} を読み込みました。${parsed.length}問でクイズを開始しています。`;
+        } catch (error) {
+          elements.importStatus.textContent = `読み込みに失敗しました。${error.message}`;
+        }
+      });
+      reader.addEventListener("error", () => {
+        elements.importStatus.textContent = "CSVファイルを読み込めませんでした。";
+      });
+      reader.readAsText(file, "UTF-8");
+    }
+
+    function startQuiz(questionSet = activeQuestionBank) {
+      const source = Array.isArray(questionSet) && questionSet.length ? questionSet : activeQuestionBank;
+      state.questions = shuffle(source);
+      state.questionIndex = 0;
+      state.stepIndex = 0;
+      state.stepChoices = [];
+      state.stepLocked = false;
+      state.currentSteps = buildSteps(state.questions[0]);
+      state.currentResponses = [];
+      state.totalAnswered = 0;
+      state.totalCorrect = 0;
+      state.questionResults = [];
+      state.completedQuestions = 0;
+      elements.resultsSummary.innerHTML = "";
+      elements.reviewList.innerHTML = "";
+
+      elements.resultsCard.classList.remove("show");
+      elements.quizCard.classList.remove("hidden");
+      updateScoreChip();
+      renderStep();
+      saveProgress();
+      updateSaveButtons();
+    }
+
+    function startMistakeQuiz() {
+      const mistakeQuestions = state.questionResults
+        .filter((record) => !record.perfect)
+        .map((record) => record.question);
+      if (!mistakeQuestions.length) {
+        elements.importStatus.textContent = "間違えた問題はありません。全問をもう一周できます。";
+        return;
+      }
+      elements.importStatus.textContent = `間違えた問題 ${mistakeQuestions.length}問だけで再開しました。`;
+      startQuiz(mistakeQuestions);
+    }
+
+    elements.skipBtn.addEventListener("click", () => {
+      if (state.stepLocked) {
+        return;
+      }
+      handleChoice(null, true);
+    });
+
+    elements.csvInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) {
+        readCsvFile(file);
+      }
+      event.target.value = "";
+    });
+
+    elements.resetBuiltInBtn.addEventListener("click", () => {
+      setQuestionBank([...QUESTIONS], "内蔵問題");
+      localStorage.removeItem(CUSTOM_KEY);
+      elements.importStatus.textContent = "内蔵問題に戻しました。";
+    });
+
+    elements.resumeSaveBtn.addEventListener("click", () => {
+      const saved = getSavedProgress();
+      if (!restoreProgress(saved)) {
+        elements.importStatus.textContent = "再開できる保存データがありません。";
+        updateSaveButtons();
+      }
+    });
+
+    elements.clearSaveBtn.addEventListener("click", () => {
+      clearSavedProgress();
+      elements.importStatus.textContent = "保存済みの学習状況を削除しました。";
+    });
+
+    elements.nextBtn.addEventListener("click", goNext);
+    elements.restartBtn.addEventListener("click", () => startQuiz());
+    elements.retryMistakesBtn.addEventListener("click", startMistakeQuiz);
+
+    loadCustomQuestions();
+    updateSaveButtons();
+    const savedOnLoad = getSavedProgress();
+    if (savedOnLoad) {
+      restoreProgress(savedOnLoad);
+    } else {
+      startQuiz();
+    }
+  </script>
+</body>
+</html>
