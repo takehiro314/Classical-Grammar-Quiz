@@ -820,6 +820,52 @@
       display: none !important;
     }
 
+
+    .result-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(19, 34, 45, 0.09);
+    }
+
+    .result-nav-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .result-nav .action-btn {
+      min-height: 46px;
+      padding: 11px 14px;
+      flex: 1 1 130px;
+    }
+
+    .floating-top-btn {
+      position: fixed;
+      right: max(16px, env(safe-area-inset-right));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 20;
+      width: 52px;
+      height: 52px;
+      min-height: 52px;
+      padding: 0;
+      border-radius: 999px;
+      display: none;
+      box-shadow: 0 14px 30px rgba(19, 34, 45, 0.22);
+    }
+
+    .floating-top-btn.show {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     @media (min-width: 720px) {
       .app {
         padding-top: 28px;
@@ -967,6 +1013,13 @@
       </section>
 
       <section class="card results" id="resultsCard" aria-live="polite">
+        <div class="result-nav" aria-label="リザルト操作 上部">
+          <div class="result-nav-group">
+            <button class="action-btn secondary" id="homeTopBtn" type="button">ホームに戻る</button>
+            <button class="action-btn secondary" id="scrollResultBottomBtn" type="button">一番下へ</button>
+          </div>
+        </div>
+
         <div class="results-head">
           <div class="eyebrow">RESULT</div>
           <h2>おつかれさまでした。復習用に、今回の答えをまとめました。</h2>
@@ -980,9 +1033,17 @@
           <button class="action-btn secondary" id="restartBtn" type="button">同じ条件でもう一周</button>
           <button class="action-btn primary" id="retryMistakesBtn" type="button">間違えた問題だけ</button>
         </div>
+
+        <div class="result-nav" aria-label="リザルト操作 下部">
+          <div class="result-nav-group">
+            <button class="action-btn secondary" id="scrollResultTopBtn" type="button">一番上へ</button>
+            <button class="action-btn secondary" id="homeBottomBtn" type="button">ホームに戻る</button>
+          </div>
+        </div>
       </section>
     </main>
   </div>
+  <button class="action-btn primary floating-top-btn" id="floatingTopBtn" type="button" aria-label="一番上へ">↑</button>
 
   <script>
     const POS_OPTIONS = ["動詞", "形容詞", "形容動詞", "助詞", "助動詞"];
@@ -1179,6 +1240,11 @@
       backHomeBtn: document.getElementById("backHomeBtn"),
       beginQuizBtn: document.getElementById("beginQuizBtn"),
       homeBtn: document.getElementById("homeBtn"),
+      homeTopBtn: document.getElementById("homeTopBtn"),
+      homeBottomBtn: document.getElementById("homeBottomBtn"),
+      scrollResultTopBtn: document.getElementById("scrollResultTopBtn"),
+      scrollResultBottomBtn: document.getElementById("scrollResultBottomBtn"),
+      floatingTopBtn: document.getElementById("floatingTopBtn"),
       rangeStartInput: document.getElementById("rangeStartInput"),
       rangeEndInput: document.getElementById("rangeEndInput"),
       questionCountInput: document.getElementById("questionCountInput"),
@@ -1186,7 +1252,7 @@
       setupStatus: document.getElementById("setupStatus"),
     };
 
-    const APP_VERSION = "1.7.0";
+    const APP_VERSION = "1.7.1";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
     const HISTORY_KEY = "classicalGrammarQuiz.history.v1";
@@ -1309,6 +1375,7 @@
       elements.quizCard.classList.toggle("hidden", screen !== "quiz");
       elements.resultsCard.classList.toggle("show", screen === "results");
       elements.resultsCard.classList.toggle("screen-hidden", screen !== "results");
+      elements.floatingTopBtn.classList.toggle("show", screen === "results");
     }
 
     function syncSetupInputs({ normalize = true } = {}) {
@@ -2287,6 +2354,23 @@
       }
     });
 
+
+
+    function scrollResultTop() {
+      elements.resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function scrollResultBottom() {
+      const bottom = elements.resultsCard.offsetTop + elements.resultsCard.scrollHeight;
+      window.scrollTo({ top: bottom, behavior: "smooth" });
+    }
+
+    function returnHomeFromResults() {
+      clearSavedProgress();
+      showScreen("home");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     elements.clearSaveBtn.addEventListener("click", () => {
       clearSavedProgress();
       elements.importStatus.textContent = "保存済みの学習状況を削除しました。";
@@ -2299,10 +2383,12 @@
     elements.openHistoryBtn.addEventListener("click", showHistoryResults);
     elements.backHomeBtn.addEventListener("click", () => showScreen("home"));
     elements.beginQuizBtn.addEventListener("click", beginQuizFromSetup);
-    elements.homeBtn.addEventListener("click", () => {
-      clearSavedProgress();
-      showScreen("home");
-    });
+    elements.homeBtn.addEventListener("click", returnHomeFromResults);
+    elements.homeTopBtn.addEventListener("click", returnHomeFromResults);
+    elements.homeBottomBtn.addEventListener("click", returnHomeFromResults);
+    elements.scrollResultTopBtn.addEventListener("click", scrollResultTop);
+    elements.scrollResultBottomBtn.addEventListener("click", scrollResultBottom);
+    elements.floatingTopBtn.addEventListener("click", scrollResultTop);
     [elements.rangeStartInput, elements.rangeEndInput, elements.questionCountInput].forEach((input) => {
       input.addEventListener("input", () => syncSetupInputs({ normalize: false }));
       input.addEventListener("blur", () => syncSetupInputs({ normalize: true }));
