@@ -233,6 +233,80 @@
       line-height: 1.6;
     }
 
+
+
+    .home-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .home-actions .action-btn {
+      width: 100%;
+    }
+
+    .setup-card {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .setup-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .setup-field {
+      display: grid;
+      gap: 7px;
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(19, 34, 45, 0.08);
+    }
+
+    .setup-field label,
+    .radio-label {
+      color: var(--accent-strong);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .setup-field input,
+    .setup-field select {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 13px;
+      border: 1px solid rgba(19, 34, 45, 0.14);
+      background: #fffdf9;
+      color: var(--ink);
+      padding: 9px 11px;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .radio-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .radio-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(19, 34, 45, 0.10);
+      cursor: pointer;
+    }
+
+    .screen-hidden {
+      display: none !important;
+    }
+
     .layout {
       display: grid;
       gap: 18px;
@@ -696,23 +770,59 @@
     </header>
 
     <main class="layout">
-      <section class="card import-card" aria-label="自作CSVの読み込み">
+      <section class="card import-card" id="homeCard" aria-label="ホーム">
         <div class="import-head">
-          <p class="import-title">自作CSVを読み込む</p>
+          <p class="import-title">ホーム</p>
           <span class="meta-chip" id="questionSourceChip">内蔵問題</span>
         </div>
-        <p class="import-help">CSVを選択すると、内蔵問題を上書きして自作問題で開始します。必須列は「sentence,target,pos」です。</p>
+        <p class="import-help">自作CSVを読み込むと、その問題セットを保存して学習できます。クイズ開始後に出題順・問題数・範囲を選びます。</p>
+        <div class="home-actions">
+          <button class="action-btn primary" id="openSetupBtn" type="button">クイズ開始</button>
+          <button class="action-btn secondary hidden" id="resumeSaveBtn" type="button">続きから再開</button>
+        </div>
         <div class="file-row">
           <input class="file-input" id="csvInput" type="file" accept=".csv,text/csv" />
           <label class="file-label" for="csvInput">CSVを選択</label>
           <button class="action-btn secondary" id="resetBuiltInBtn" type="button">内蔵問題に戻す</button>
-          <button class="action-btn secondary hidden" id="resumeSaveBtn" type="button">続きから再開</button>
           <button class="action-btn secondary hidden" id="clearSaveBtn" type="button">保存を削除</button>
         </div>
-        <p class="import-status" id="importStatus">未選択です。列名は英語でも日本語でも読み込めます。</p>
+        <p class="import-status" id="importStatus">現在は内蔵問題です。列名は英語でも日本語でも読み込めます。</p>
       </section>
 
-      <section class="card" id="quizCard" aria-live="polite">
+      <section class="card setup-card screen-hidden" id="setupCard" aria-label="出題設定">
+        <div class="import-head">
+          <p class="import-title">出題設定</p>
+          <span class="meta-chip" id="setupCountChip">全 0 問</span>
+        </div>
+        <div class="setup-grid">
+          <div class="setup-field">
+            <label for="rangeStartInput">出題範囲：開始番号</label>
+            <input id="rangeStartInput" type="number" min="1" value="1" inputmode="numeric" />
+          </div>
+          <div class="setup-field">
+            <label for="rangeEndInput">出題範囲：終了番号</label>
+            <input id="rangeEndInput" type="number" min="1" value="1" inputmode="numeric" />
+          </div>
+          <div class="setup-field">
+            <label for="questionCountInput">出題数</label>
+            <input id="questionCountInput" type="number" min="1" value="1" inputmode="numeric" />
+          </div>
+        </div>
+        <div class="setup-field">
+          <span class="radio-label" style="border:0;background:transparent;padding:0;">出題順</span>
+          <div class="radio-row">
+            <label class="radio-label"><input type="radio" name="orderMode" value="sequential" checked /> 順番に出題</label>
+            <label class="radio-label"><input type="radio" name="orderMode" value="random" /> ランダムに出題</label>
+          </div>
+        </div>
+        <p class="import-status" id="setupStatus">CSVで文章順に問題を並べた場合は、範囲指定でその一部だけを演習できます。</p>
+        <div class="actions" style="padding: 0;">
+          <button class="action-btn secondary" id="backHomeBtn" type="button">ホームに戻る</button>
+          <button class="action-btn primary" id="beginQuizBtn" type="button">この設定で始める</button>
+        </div>
+      </section>
+
+      <section class="card screen-hidden" id="quizCard" aria-live="polite">
         <div class="sentence-block">
           <div class="section-label">文章</div>
           <p class="sentence" id="sentenceText"></p>
@@ -765,7 +875,8 @@
         <div class="review-list" id="reviewList"></div>
 
         <div class="actions" style="padding: 0;">
-          <button class="action-btn secondary" id="restartBtn" type="button">もう一周する</button>
+          <button class="action-btn secondary" id="homeBtn" type="button">ホームに戻る</button>
+          <button class="action-btn secondary" id="restartBtn" type="button">同じ条件でもう一周</button>
           <button class="action-btn primary" id="retryMistakesBtn" type="button">間違えた問題だけ</button>
         </div>
       </section>
@@ -792,6 +903,7 @@
       {
         sentence: "春、山に花咲く。",
         target: "咲く",
+        lemma: "咲く",
         pos: "動詞",
         conjugationType: "四段活用",
         conjugationForm: "終止形",
@@ -800,6 +912,7 @@
       {
         sentence: "都を見る人あり。",
         target: "見る",
+        lemma: "見る",
         pos: "動詞",
         conjugationType: "上一段活用",
         conjugationForm: "連体形",
@@ -808,6 +921,7 @@
       {
         sentence: "雪は白し。",
         target: "白し",
+        lemma: "白し",
         pos: "形容詞",
         conjugationType: "シク活用",
         conjugationForm: "終止形",
@@ -816,6 +930,7 @@
       {
         sentence: "高き山に雪ふる。",
         target: "高き",
+        lemma: "高し",
         pos: "形容詞",
         conjugationType: "ク活用",
         conjugationForm: "連体形",
@@ -824,6 +939,7 @@
       {
         sentence: "都は静かなり。",
         target: "静かなり",
+        lemma: "静かなり",
         pos: "形容動詞",
         conjugationType: "ナリ活用",
         conjugationForm: "終止形",
@@ -832,6 +948,7 @@
       {
         sentence: "あはれなる人あり。",
         target: "あはれなる",
+        lemma: "あはれなり",
         pos: "形容動詞",
         conjugationType: "ナリ活用",
         conjugationForm: "連体形",
@@ -840,6 +957,7 @@
       {
         sentence: "花は春なり。",
         target: "なり",
+        lemma: "なり",
         pos: "助動詞",
         conjugationType: "ナリ活用",
         conjugationTypeChoices: ["ナリ活用", "タリ活用"],
@@ -851,6 +969,7 @@
       {
         sentence: "花咲きたり。",
         target: "たり",
+        lemma: "たり",
         pos: "助動詞",
         conjugationType: "タリ活用",
         conjugationTypeChoices: ["タリ活用", "ナリ活用"],
@@ -862,6 +981,7 @@
       {
         sentence: "花を見る。",
         target: "を",
+        lemma: "を",
         pos: "助詞",
         particleType: "格助詞",
         particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
@@ -874,6 +994,7 @@
       {
         sentence: "都にて花を見る。",
         target: "にて",
+        lemma: "にて",
         pos: "助詞",
         particleType: "格助詞",
         particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
@@ -886,6 +1007,7 @@
       {
         sentence: "花こそ咲け。",
         target: "こそ",
+        lemma: "こそ",
         pos: "助詞",
         particleType: "係助詞",
         particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
@@ -899,6 +1021,7 @@
       {
         sentence: "雨降れば出で立つ。",
         target: "ば",
+        lemma: "ば",
         pos: "助詞",
         particleType: "接続助詞",
         particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
@@ -911,6 +1034,7 @@
       {
         sentence: "都より来たり。",
         target: "より",
+        lemma: "より",
         pos: "助詞",
         particleType: "格助詞",
         particleTypeChoices: ["格助詞", "接続助詞", "副助詞", "係助詞"],
@@ -947,9 +1071,20 @@
       resumeSaveBtn: document.getElementById("resumeSaveBtn"),
       clearSaveBtn: document.getElementById("clearSaveBtn"),
       retryMistakesBtn: document.getElementById("retryMistakesBtn"),
+      homeCard: document.getElementById("homeCard"),
+      setupCard: document.getElementById("setupCard"),
+      openSetupBtn: document.getElementById("openSetupBtn"),
+      backHomeBtn: document.getElementById("backHomeBtn"),
+      beginQuizBtn: document.getElementById("beginQuizBtn"),
+      homeBtn: document.getElementById("homeBtn"),
+      rangeStartInput: document.getElementById("rangeStartInput"),
+      rangeEndInput: document.getElementById("rangeEndInput"),
+      questionCountInput: document.getElementById("questionCountInput"),
+      setupCountChip: document.getElementById("setupCountChip"),
+      setupStatus: document.getElementById("setupStatus"),
     };
 
-    const APP_VERSION = "1.5.0";
+    const APP_VERSION = "1.6.0";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
 
@@ -969,6 +1104,12 @@
       totalCorrect: 0,
       questionResults: [],
       completedQuestions: 0,
+      quizSettings: {
+        orderMode: "random",
+        rangeStart: 1,
+        rangeEnd: 1,
+        questionCount: 1,
+      },
     };
 
     function clone(value) {
@@ -1034,6 +1175,7 @@
             totalCorrect: state.totalCorrect,
             questionResults: state.questionResults,
             completedQuestions: state.completedQuestions,
+            quizSettings: state.quizSettings,
           },
         }));
       } catch (error) {
@@ -1053,6 +1195,63 @@
     function clearSavedProgress() {
       localStorage.removeItem(SAVE_KEY);
       updateSaveButtons();
+    }
+
+
+    function showScreen(screen) {
+      elements.homeCard.classList.toggle("screen-hidden", screen !== "home");
+      elements.setupCard.classList.toggle("screen-hidden", screen !== "setup");
+      elements.quizCard.classList.toggle("screen-hidden", screen !== "quiz");
+      elements.quizCard.classList.toggle("hidden", screen !== "quiz");
+      elements.resultsCard.classList.toggle("show", screen === "results");
+      elements.resultsCard.classList.toggle("screen-hidden", screen !== "results");
+    }
+
+    function syncSetupInputs() {
+      const total = activeQuestionBank.length || 1;
+      elements.setupCountChip.textContent = `全 ${total} 問`;
+      elements.rangeStartInput.max = String(total);
+      elements.rangeEndInput.max = String(total);
+      elements.questionCountInput.max = String(total);
+      const currentStart = Math.min(Math.max(Number(elements.rangeStartInput.value) || 1, 1), total);
+      const currentEnd = Math.min(Math.max(Number(elements.rangeEndInput.value) || total, currentStart), total);
+      elements.rangeStartInput.value = String(currentStart);
+      elements.rangeEndInput.value = String(currentEnd);
+      elements.questionCountInput.value = String(Math.min(Math.max(Number(elements.questionCountInput.value) || (currentEnd - currentStart + 1), 1), currentEnd - currentStart + 1));
+    }
+
+    function openSetup() {
+      const total = activeQuestionBank.length || 1;
+      elements.rangeStartInput.value = "1";
+      elements.rangeEndInput.value = String(total);
+      elements.questionCountInput.value = String(total);
+      const randomRadio = document.querySelector('input[name="orderMode"][value="random"]');
+      if (randomRadio) randomRadio.checked = true;
+      syncSetupInputs();
+      elements.setupStatus.textContent = "範囲と問題数を選んでから開始してください。";
+      showScreen("setup");
+    }
+
+    function getQuizSettingsFromInputs() {
+      const total = activeQuestionBank.length;
+      let start = Math.min(Math.max(Number(elements.rangeStartInput.value) || 1, 1), total);
+      let end = Math.min(Math.max(Number(elements.rangeEndInput.value) || total, 1), total);
+      if (end < start) [start, end] = [end, start];
+      const available = end - start + 1;
+      const count = Math.min(Math.max(Number(elements.questionCountInput.value) || available, 1), available);
+      const checked = document.querySelector('input[name="orderMode"]:checked');
+      return {
+        orderMode: checked ? checked.value : "random",
+        rangeStart: start,
+        rangeEnd: end,
+        questionCount: count,
+      };
+    }
+
+    function buildQuestionSetFromSettings(settings) {
+      const ranged = activeQuestionBank.slice(settings.rangeStart - 1, settings.rangeEnd);
+      const ordered = settings.orderMode === "random" ? shuffle(ranged) : [...ranged];
+      return ordered.slice(0, settings.questionCount);
     }
 
     function updateSaveButtons() {
@@ -1082,9 +1281,9 @@
       state.totalCorrect = saved.state.totalCorrect || 0;
       state.questionResults = Array.isArray(saved.state.questionResults) ? saved.state.questionResults : [];
       state.completedQuestions = saved.state.completedQuestions || 0;
+      state.quizSettings = saved.state.quizSettings || state.quizSettings;
 
-      elements.resultsCard.classList.remove("show");
-      elements.quizCard.classList.remove("hidden");
+      showScreen("quiz");
       updateScoreChip();
       renderStep();
 
@@ -1231,14 +1430,15 @@
     }
 
     function createReviewText(question) {
+      const lemma = question.lemma || question.baseForm || question.dictionaryForm || question.target;
       if (question.pos === "助詞") {
         const kakariText = question.kakariTargetForm ? ` / 係り先: ${question.kakariTargetForm}` : "";
-        return `品詞: ${question.pos} / ${question.particleType} / 意味: ${question.particleMeaning} / 接続: ${question.particleConnection}${kakariText}`;
+        return `語: ${lemma} / 品詞: ${question.pos} / ${question.particleType} / 意味: ${question.particleMeaning} / 接続: ${question.particleConnection}${kakariText}`;
       }
       if (question.pos === "助動詞") {
-        return `品詞: ${question.pos} / ${question.conjugationForm} / 意味: ${question.auxiliaryMeaning}`;
+        return `語: ${lemma} / 品詞: ${question.pos} / ${question.conjugationForm} / 意味: ${question.auxiliaryMeaning}`;
       }
-      return `品詞: ${question.pos} / ${question.conjugationType} / ${question.conjugationForm}`;
+      return `語: ${lemma} / 品詞: ${question.pos} / ${question.conjugationType} / ${question.conjugationForm}`;
     }
 
     function currentQuestion() {
@@ -1275,6 +1475,11 @@
           return `<span class="${cls}">${escapeHtml(step.label)}</span>`;
         })
         .join("");
+    }
+
+    function lemmaText(question) {
+      const lemma = question.lemma || question.baseForm || question.dictionaryForm || question.target;
+      return `語：${lemma}（${question.pos}）`;
     }
 
     function stepExplanation(step, question) {
@@ -1317,6 +1522,7 @@
       elements.feedbackBox.innerHTML = `
         <strong>${escapeHtml(title)}</strong>
         <p>${escapeHtml(selectedText)}</p>
+        <p>${escapeHtml(lemmaText(question))}</p>
         <p>正解: ${escapeHtml(step.answer)}</p>
         <p>${escapeHtml(stepExplanation(step, question))}</p>
       `;
@@ -1342,8 +1548,7 @@
       const question = currentQuestion();
       const step = currentStep();
 
-      elements.quizCard.classList.remove("hidden");
-      elements.resultsCard.classList.remove("show");
+      showScreen("quiz");
 
       elements.sentenceText.innerHTML = makeSentenceHtml(question.sentence, question.target);
       elements.targetWord.textContent = question.target;
@@ -1454,8 +1659,7 @@
     }
 
     function showResults() {
-      elements.quizCard.classList.add("hidden");
-      elements.resultsCard.classList.add("show");
+      showScreen("results");
 
       const totalQuestions = state.questions.length;
       const totalSteps = state.questionResults.reduce((sum, record) => sum + record.responses.length, 0);
@@ -1566,6 +1770,7 @@
     const CSV_FIELD_ALIASES = {
       sentence: ["sentence", "本文", "文章", "例文", "文"],
       target: ["target", "対象語", "語", "単語", "判別する単語"],
+      lemma: ["lemma", "baseForm", "dictionaryForm", "原形", "基本形", "辞書形"],
       pos: ["pos", "品詞"],
       conjugationType: ["conjugationType", "活用の種類", "活用種類"],
       conjugationForm: ["conjugationForm", "活用形"],
@@ -1606,6 +1811,7 @@
         question.conjugationType = question.conjugationType || conjugationTypeOptionsFor(question.pos)[0] || "四段活用";
         question.conjugationForm = question.conjugationForm || "終止形";
       }
+      question.lemma = question.lemma || question.baseForm || question.dictionaryForm || question.target;
       question.note = question.note || "CSVから読み込んだ自作問題です。";
       return question;
     }
@@ -1627,6 +1833,7 @@
         const raw = {
           sentence: cell(row, headerMap.sentence),
           target: cell(row, headerMap.target),
+          lemma: cell(row, headerMap.lemma),
           pos: cell(row, headerMap.pos),
           conjugationType: cell(row, headerMap.conjugationType),
           conjugationForm: cell(row, headerMap.conjugationForm),
@@ -1659,7 +1866,7 @@
       elements.questionSourceChip.textContent = sourceLabel;
       saveCustomQuestions();
       clearSavedProgress();
-      startQuiz();
+      openSetup();
     }
 
     function readCsvFile(file) {
@@ -1668,7 +1875,7 @@
         try {
           const parsed = questionsFromCsv(String(reader.result || ""));
           setQuestionBank(parsed, `自作CSV ${parsed.length}問`);
-          elements.importStatus.textContent = `${file.name} を読み込みました。${parsed.length}問でクイズを開始しています。`;
+          elements.importStatus.textContent = `${file.name} を読み込みました。${parsed.length}問から出題設定を選べます。`;
         } catch (error) {
           elements.importStatus.textContent = `読み込みに失敗しました。${error.message}`;
         }
@@ -1679,9 +1886,11 @@
       reader.readAsText(file, "UTF-8");
     }
 
-    function startQuiz(questionSet = activeQuestionBank) {
-      const source = Array.isArray(questionSet) && questionSet.length ? questionSet : activeQuestionBank;
-      state.questions = shuffle(source);
+    function startQuiz(questionSet = null, settings = null) {
+      const selectedSettings = settings || state.quizSettings || getQuizSettingsFromInputs();
+      const source = Array.isArray(questionSet) && questionSet.length ? questionSet : buildQuestionSetFromSettings(selectedSettings);
+      state.questions = source;
+      state.quizSettings = selectedSettings;
       state.questionIndex = 0;
       state.stepIndex = 0;
       state.stepChoices = [];
@@ -1695,12 +1904,22 @@
       elements.resultsSummary.innerHTML = "";
       elements.reviewList.innerHTML = "";
 
-      elements.resultsCard.classList.remove("show");
-      elements.quizCard.classList.remove("hidden");
+      showScreen("quiz");
       updateScoreChip();
       renderStep();
       saveProgress();
       updateSaveButtons();
+    }
+
+    function beginQuizFromSetup() {
+      syncSetupInputs();
+      const settings = getQuizSettingsFromInputs();
+      const questions = buildQuestionSetFromSettings(settings);
+      if (!questions.length) {
+        elements.setupStatus.textContent = "出題できる問題がありません。範囲を確認してください。";
+        return;
+      }
+      startQuiz(questions, settings);
     }
 
     function startMistakeQuiz() {
@@ -1750,17 +1969,23 @@
     });
 
     elements.nextBtn.addEventListener("click", goNext);
-    elements.restartBtn.addEventListener("click", () => startQuiz());
+    elements.restartBtn.addEventListener("click", () => startQuiz(null, state.quizSettings));
     elements.retryMistakesBtn.addEventListener("click", startMistakeQuiz);
+    elements.openSetupBtn.addEventListener("click", openSetup);
+    elements.backHomeBtn.addEventListener("click", () => showScreen("home"));
+    elements.beginQuizBtn.addEventListener("click", beginQuizFromSetup);
+    elements.homeBtn.addEventListener("click", () => {
+      clearSavedProgress();
+      showScreen("home");
+    });
+    [elements.rangeStartInput, elements.rangeEndInput, elements.questionCountInput].forEach((input) => {
+      input.addEventListener("input", syncSetupInputs);
+    });
 
     loadCustomQuestions();
     updateSaveButtons();
-    const savedOnLoad = getSavedProgress();
-    if (savedOnLoad) {
-      restoreProgress(savedOnLoad);
-    } else {
-      startQuiz();
-    }
+    syncSetupInputs();
+    showScreen("home");
   </script>
 </body>
 </html>
