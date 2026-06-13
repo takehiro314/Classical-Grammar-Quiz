@@ -303,6 +303,89 @@
       cursor: pointer;
     }
 
+    .order-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .order-title {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .order-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 18px;
+      background: rgba(28, 102, 133, 0.08);
+      border: 1px solid rgba(28, 102, 133, 0.12);
+    }
+
+    .order-option {
+      display: grid;
+      place-items: center;
+      min-height: 48px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+    }
+
+    .order-option input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .order-option.selected,
+    .order-option:has(input:checked) {
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: white;
+      box-shadow: 0 10px 20px rgba(28, 102, 133, 0.18);
+    }
+
+    .quiz-home-btn {
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(28, 102, 133, 0.10);
+      color: var(--accent-strong);
+      border: 1px solid rgba(28, 102, 133, 0.16);
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media (max-width: 520px) {
+      .order-toggle {
+        grid-template-columns: 1fr;
+      }
+
+      .quiz-top {
+        align-items: stretch;
+      }
+
+      .quiz-top .meta-row {
+        width: 100%;
+      }
+
+      .quiz-home-btn {
+        margin-left: auto;
+      }
+    }
+
     .screen-hidden {
       display: none !important;
     }
@@ -955,11 +1038,17 @@
             <input id="questionCountInput" type="number" min="1" value="1" inputmode="numeric" />
           </div>
         </div>
-        <div class="setup-field">
-          <span class="radio-label" style="border:0;background:transparent;padding:0;">出題順</span>
-          <div class="radio-row">
-            <label class="radio-label"><input type="radio" name="orderMode" value="sequential" checked /> 順番に出題</label>
-            <label class="radio-label"><input type="radio" name="orderMode" value="random" /> ランダムに出題</label>
+        <div class="setup-field order-panel">
+          <p class="order-title">出題順</p>
+          <div class="order-toggle" role="radiogroup" aria-label="出題順">
+            <label class="order-option selected">
+              <input type="radio" name="orderMode" value="sequential" checked />
+              順番に出題
+            </label>
+            <label class="order-option">
+              <input type="radio" name="orderMode" value="random" />
+              ランダムに出題
+            </label>
           </div>
         </div>
         <p class="import-status" id="setupStatus">CSVで文章順に問題を並べた場合は、範囲指定でその一部だけを演習できます。</p>
@@ -989,6 +1078,7 @@
             <div class="meta-row">
               <span class="meta-chip" id="questionChip">第 1 問</span>
               <span class="meta-chip" id="scoreChip">正答 0 / 0</span>
+              <button class="quiz-home-btn" id="quizHomeBtn" type="button">ホーム</button>
             </div>
           </div>
 
@@ -1239,6 +1329,7 @@
       openSetupBtn: document.getElementById("openSetupBtn"),
       backHomeBtn: document.getElementById("backHomeBtn"),
       beginQuizBtn: document.getElementById("beginQuizBtn"),
+      quizHomeBtn: document.getElementById("quizHomeBtn"),
       homeBtn: document.getElementById("homeBtn"),
       homeTopBtn: document.getElementById("homeTopBtn"),
       homeBottomBtn: document.getElementById("homeBottomBtn"),
@@ -1252,7 +1343,7 @@
       setupStatus: document.getElementById("setupStatus"),
     };
 
-    const APP_VERSION = "1.7.1";
+    const APP_VERSION = "1.7.2";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
     const HISTORY_KEY = "classicalGrammarQuiz.history.v1";
@@ -1275,7 +1366,7 @@
       completedQuestions: 0,
       resultSaved: false,
       quizSettings: {
-        orderMode: "random",
+        orderMode: "sequential",
         rangeStart: 1,
         rangeEnd: 1,
         questionCount: 1,
@@ -1401,8 +1492,9 @@
       elements.rangeStartInput.value = "1";
       elements.rangeEndInput.value = String(total);
       elements.questionCountInput.value = String(total);
-      const randomRadio = document.querySelector('input[name="orderMode"][value="random"]');
-      if (randomRadio) randomRadio.checked = true;
+      const sequentialRadio = document.querySelector('input[name="orderMode"][value="sequential"]');
+      if (sequentialRadio) sequentialRadio.checked = true;
+      updateOrderToggleUI();
       syncSetupInputs();
       elements.setupStatus.textContent = "範囲と問題数を選んでから開始してください。";
       showScreen("setup");
@@ -1417,7 +1509,7 @@
       const count = Math.min(Math.max(Number(elements.questionCountInput.value) || available, 1), available);
       const checked = document.querySelector('input[name="orderMode"]:checked');
       return {
-        orderMode: checked ? checked.value : "random",
+        orderMode: checked ? checked.value : "sequential",
         rangeStart: start,
         rangeEnd: end,
         questionCount: count,
@@ -2371,6 +2463,24 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function returnHomeFromQuiz() {
+      const ok = window.confirm("学習中です。ここまでを保存してホームに戻りますか？");
+      if (!ok) {
+        return;
+      }
+      saveProgress();
+      updateSaveButtons();
+      showScreen("home");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateOrderToggleUI() {
+      document.querySelectorAll(".order-option").forEach((label) => {
+        const input = label.querySelector('input[name="orderMode"]');
+        label.classList.toggle("selected", Boolean(input && input.checked));
+      });
+    }
+
     elements.clearSaveBtn.addEventListener("click", () => {
       clearSavedProgress();
       elements.importStatus.textContent = "保存済みの学習状況を削除しました。";
@@ -2383,12 +2493,16 @@
     elements.openHistoryBtn.addEventListener("click", showHistoryResults);
     elements.backHomeBtn.addEventListener("click", () => showScreen("home"));
     elements.beginQuizBtn.addEventListener("click", beginQuizFromSetup);
+    elements.quizHomeBtn.addEventListener("click", returnHomeFromQuiz);
     elements.homeBtn.addEventListener("click", returnHomeFromResults);
     elements.homeTopBtn.addEventListener("click", returnHomeFromResults);
     elements.homeBottomBtn.addEventListener("click", returnHomeFromResults);
     elements.scrollResultTopBtn.addEventListener("click", scrollResultTop);
     elements.scrollResultBottomBtn.addEventListener("click", scrollResultBottom);
     elements.floatingTopBtn.addEventListener("click", scrollResultTop);
+    document.querySelectorAll('input[name="orderMode"]').forEach((input) => {
+      input.addEventListener("change", updateOrderToggleUI);
+    });
     [elements.rangeStartInput, elements.rangeEndInput, elements.questionCountInput].forEach((input) => {
       input.addEventListener("input", () => syncSetupInputs({ normalize: false }));
       input.addEventListener("blur", () => syncSetupInputs({ normalize: true }));
@@ -2398,6 +2512,7 @@
     loadCustomQuestions();
     updateSaveButtons();
     syncSetupInputs();
+    updateOrderToggleUI();
     showScreen("home");
   </script>
 </body>
