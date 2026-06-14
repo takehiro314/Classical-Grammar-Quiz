@@ -1146,6 +1146,7 @@
           <button class="action-btn primary" id="openSetupBtn" type="button">クイズ開始</button>
           <button class="action-btn secondary hidden" id="resumeSaveBtn" type="button">続きから再開</button>
           <button class="action-btn secondary" id="openHistoryBtn" type="button">リザルト</button>
+          <button class="action-btn secondary" id="openProgressBtn" type="button">CSV進捗</button>
         </div>
         <div class="file-row">
           <input class="file-input" id="csvInput" type="file" accept=".csv,text/csv" />
@@ -1200,6 +1201,19 @@
             <label class="order-option">
               <input type="radio" name="orderMode" value="random" />
               ランダムに出題
+            </label>
+          </div>
+        </div>
+        <div class="setup-field order-panel">
+          <p class="order-title">出題対象</p>
+          <div class="order-toggle" role="radiogroup" aria-label="出題対象">
+            <label class="order-option selected">
+              <input type="radio" name="questionScope" value="all" checked />
+              全て出題
+            </label>
+            <label class="order-option">
+              <input type="radio" name="questionScope" value="unmastered" />
+              正解済みを除く
             </label>
           </div>
         </div>
@@ -1484,6 +1498,7 @@
       resetBuiltInBtn: document.getElementById("resetBuiltInBtn"),
       resumeSaveBtn: document.getElementById("resumeSaveBtn"),
       openHistoryBtn: document.getElementById("openHistoryBtn"),
+      openProgressBtn: document.getElementById("openProgressBtn"),
       clearSaveBtn: document.getElementById("clearSaveBtn"),
       retryMistakesBtn: document.getElementById("retryMistakesBtn"),
       homeCard: document.getElementById("homeCard"),
@@ -1512,10 +1527,11 @@
       posFilterToggle: document.getElementById("posFilterToggle"),
     };
 
-    const APP_VERSION = "1.7.4";
+    const APP_VERSION = "1.7.5";
     const SAVE_KEY = "classicalGrammarQuiz.progress.v1";
     const CUSTOM_KEY = "classicalGrammarQuiz.customQuestions.v1";
     const HISTORY_KEY = "classicalGrammarQuiz.history.v1";
+    const PROGRESS_KEY = "classicalGrammarQuiz.questionProgress.v1";
 
     let activeQuestionBank = [...QUESTIONS];
     let activeQuestionSource = "内蔵問題";
@@ -1539,6 +1555,7 @@
         rangeStart: 1,
         rangeEnd: 1,
         questionCount: 1,
+        questionScope: "all",
         selectedPos: [...POS_OPTIONS],
       },
       rangePicker: {
@@ -1549,6 +1566,120 @@
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
+    }
+
+    function canonicalQuestion(question) {
+      return {
+        sentence: question.sentence || "",
+        target: question.target || "",
+        lemma: question.lemma || question.baseForm || question.dictionaryForm || question.target || "",
+        pos: question.pos || "",
+        conjugationType: question.conjugationType || "",
+        conjugationForm: question.conjugationForm || "",
+        particleType: question.particleType || "",
+        particleMeaning: question.particleMeaning || "",
+        particleConnection: question.particleConnection || "",
+        kakariTargetForm: question.kakariTargetForm || "",
+        auxiliaryMeaning: question.auxiliaryMeaning || "",
+      };
+    }
+
+    function simpleHash(text) {
+      let hash = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
+    }
+
+    function getCurrentBankKey() {
+      const body = JSON.stringify(activeQuestionBank.map(canonicalQuestion));
+      return `bank-${simpleHash(body)}`;
+    }
+
+    function questionProgressKey(question) {
+      return simpleHash(JSON.stringify(canonicalQuestion(question)));
+    }
+
+    function loadProgressStore() {
+      try {
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveProgressStore(store) {
+      try {
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(store));
+      } catch (error) {
+        console.warn("問題別進捗の保存に失敗しました。", error);
+      }
+    }
+
+    function getCurrentBankProgress() {
+      const store = loadProgressStore();
+      const bankKey = getCurrentBankKey();
+      const bank = store[bankKey] || { items: {} };
+      if (!bank.items || typeof bank.items !== "object") {
+        bank.items = {};
+      }
+      return bank;
+    }
+
+    function isQuestionMastered(question) {
+      const progress = getCurrentBankProgress();
+      const item = progress.items[questionProgressKey(question)];
+      return Boolean(item && item.correct);
+    }
+
+    function saveQuestionProgressRecord(record) {
+      if (!record || !record.question) {
+        return;
+      }
+      const store = loadProgressStore();
+      const bankKey = getCurrentBankKey();
+      const existing = store[bankKey] || { version: APP_VERSION, source: activeQuestionSource, total: activeQuestionBank.length, items: {} };
+      existing.version = APP_VERSION;
+      existing.source = activeQuestionSource;
+      existing.total = activeQuestionBank.length;
+      existing.updatedAt = new Date().toISOString();
+      existing.items = existing.items || {};
+
+      const key = questionProgressKey(record.question);
+      const item = existing.items[key] || {
+        question: canonicalQuestion(record.question),
+        attempts: 0,
+        correctAttempts: 0,
+        attempted: false,
+        correct: false,
+      };
+      item.question = canonicalQuestion(record.question);
+      item.attempts = (item.attempts || 0) + 1;
+      item.correctAttempts = (item.correctAttempts || 0) + (record.perfect ? 1 : 0);
+      item.attempted = true;
+      item.correct = Boolean(item.correct || record.perfect);
+      item.lastPerfect = Boolean(record.perfect);
+      item.lastAt = new Date().toISOString();
+      existing.items[key] = item;
+      store[bankKey] = existing;
+      saveProgressStore(store);
+    }
+
+    function getCurrentBankProgressStats() {
+      const progress = getCurrentBankProgress();
+      const total = activeQuestionBank.length;
+      const keys = activeQuestionBank.map(questionProgressKey);
+      const uniqueKeys = [...new Set(keys)];
+      const attempted = uniqueKeys.filter((key) => progress.items[key] && progress.items[key].attempted).length;
+      const correct = uniqueKeys.filter((key) => progress.items[key] && progress.items[key].correct).length;
+      const attemptedRate = total ? Math.round((attempted / total) * 100) : 0;
+      const correctRate = total ? Math.round((correct / total) * 100) : 0;
+      const attemptedAccuracy = attempted ? Math.round((correct / attempted) * 100) : 0;
+      return { total, attempted, correct, attemptedRate, correctRate, attemptedAccuracy, progress };
     }
 
     function saveCustomQuestions() {
@@ -1744,17 +1875,26 @@
       });
     }
 
+    function getSelectedQuestionScope() {
+      const checked = document.querySelector('input[name="questionScope"]:checked');
+      return checked ? checked.value : "all";
+    }
+
     function updatePosFilterStatus() {
       const selected = getSelectedPosFilters();
       const start = Math.min(Math.max(Number(elements.rangeStartInput.value) || 1, 1), activeQuestionBank.length || 1);
       const end = Math.min(Math.max(Number(elements.rangeEndInput.value) || activeQuestionBank.length || 1, 1), activeQuestionBank.length || 1);
       const min = Math.min(start, end);
       const max = Math.max(start, end);
-      const filteredCount = activeQuestionBank
+      const scope = getSelectedQuestionScope();
+      const filtered = activeQuestionBank
         .slice(min - 1, max)
-        .filter((question) => selected.includes(question.pos)).length;
+        .filter((question) => selected.includes(question.pos))
+        .filter((question) => scope !== "unmastered" || !isQuestionMastered(question));
+      const filteredCount = filtered.length;
       const label = selected.length === POS_OPTIONS.length ? "全品詞" : selected.join("・");
-      elements.setupStatus.textContent = `${label}から出題します。現在の範囲では ${filteredCount} 問が対象です。`;
+      const scopeLabel = scope === "unmastered" ? "正解済みを除外" : "全問題";
+      elements.setupStatus.textContent = `${label}・${scopeLabel}で出題します。現在の範囲では ${filteredCount} 問が対象です。`;
     }
 
     function toggleRangePicker() {
@@ -1776,6 +1916,8 @@
       elements.questionCountInput.value = String(total);
       const sequentialRadio = document.querySelector('input[name="orderMode"][value="sequential"]');
       if (sequentialRadio) sequentialRadio.checked = true;
+      const allScopeRadio = document.querySelector('input[name="questionScope"][value="all"]');
+      if (allScopeRadio) allScopeRadio.checked = true;
       updateOrderToggleUI();
       resetPosFilter();
       syncSetupInputs();
@@ -1794,11 +1936,16 @@
       let end = Math.min(Math.max(Number(elements.rangeEndInput.value) || total, 1), total);
       if (end < start) [start, end] = [end, start];
       const selectedPos = getSelectedPosFilters();
-      const available = activeQuestionBank.slice(start - 1, end).filter((question) => selectedPos.includes(question.pos)).length;
+      const questionScope = getSelectedQuestionScope();
+      const available = activeQuestionBank
+        .slice(start - 1, end)
+        .filter((question) => selectedPos.includes(question.pos))
+        .filter((question) => questionScope !== "unmastered" || !isQuestionMastered(question)).length;
       const count = Math.min(Math.max(Number(elements.questionCountInput.value) || Math.max(available, 1), 1), Math.max(available, 1));
       const checked = document.querySelector('input[name="orderMode"]:checked');
       return {
         orderMode: checked ? checked.value : "sequential",
+        questionScope,
         rangeStart: start,
         rangeEnd: end,
         questionCount: count,
@@ -1810,7 +1957,8 @@
       const selectedPos = Array.isArray(settings.selectedPos) && settings.selectedPos.length ? settings.selectedPos : POS_OPTIONS;
       const ranged = activeQuestionBank
         .slice(settings.rangeStart - 1, settings.rangeEnd)
-        .filter((question) => selectedPos.includes(question.pos));
+        .filter((question) => selectedPos.includes(question.pos))
+        .filter((question) => settings.questionScope !== "unmastered" || !isQuestionMastered(question));
       const ordered = settings.orderMode === "random" ? shuffle(ranged) : [...ranged];
       return ordered.slice(0, settings.questionCount);
     }
@@ -2216,11 +2364,13 @@
       const perfect = state.currentResponses.length === state.currentSteps.length
         && state.currentResponses.every((item) => item.isCorrect);
 
-      state.questionResults.push({
+      const record = {
         question,
         perfect,
         responses: [...state.currentResponses],
-      });
+      };
+      state.questionResults.push(record);
+      saveQuestionProgressRecord(record);
       state.completedQuestions += 1;
       state.totalAnswered += 1;
       if (perfect) {
@@ -2389,6 +2539,74 @@
           </article>
         `;
       }).join("");
+    }
+
+    function renderProgressBars(stats) {
+      return `
+        <div class="analysis-section">
+          <h3>現在の問題セット全体の進捗</h3>
+          <div class="bar-list">
+            <div class="bar-row">
+              <div class="bar-head"><span>演習完了率</span><span>${stats.attemptedRate}%（${stats.attempted}/${stats.total}）</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:${stats.attemptedRate}%;"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-head"><span>正解済み率</span><span>${stats.correctRate}%（${stats.correct}/${stats.total}）</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:${stats.correctRate}%;"></div></div>
+            </div>
+          </div>
+          <p style="margin:0;color:var(--muted);line-height:1.7;">正解済み率は、CSV全体のうち一度でも全ステップ正解した語の割合です。再開時に「正解済みを除く」を選ぶと、この正解済み語をスキップできます。</p>
+        </div>
+      `;
+    }
+
+    function renderProgressQuestionList() {
+      const progress = getCurrentBankProgress();
+      return activeQuestionBank.map((question, index) => {
+        const item = progress.items[questionProgressKey(question)];
+        const status = item && item.correct ? "正解済み" : item && item.attempted ? "演習済み" : "未演習";
+        const color = item && item.correct ? "var(--success)" : item && item.attempted ? "var(--accent-strong)" : "var(--muted)";
+        return `
+          <article class="review-item">
+            <h3>${index + 1}. ${escapeHtml(formatQuestionSignature(question))}　<span style="color:${color};">${status}</span></h3>
+            <p>${escapeHtml(question.sentence || "")}</p>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function showCurrentProgressResults() {
+      const stats = getCurrentBankProgressStats();
+      showScreen("results");
+      requestAnimationFrame(() => elements.resultsCard.scrollIntoView({ behavior: "smooth", block: "start" }));
+
+      elements.restartBtn.classList.add("hidden");
+      elements.retryMistakesBtn.classList.add("hidden");
+      const heading = elements.resultsCard.querySelector(".results-head h2");
+      if (heading) {
+        heading.textContent = "現在の問題セットの進捗";
+      }
+      elements.resultsSummary.innerHTML = `
+        <div class="summary-card">
+          <div class="label">演習完了率</div>
+          <p class="value">${stats.attemptedRate}%</p>
+        </div>
+        <div class="summary-card">
+          <div class="label">正解済み率</div>
+          <p class="value">${stats.correctRate}%</p>
+        </div>
+        <div class="summary-card">
+          <div class="label">正解済み語</div>
+          <p class="value">${stats.correct} / ${stats.total}</p>
+        </div>
+      `;
+      elements.reviewList.innerHTML = `
+        <div class="analysis-section"><p style="margin:0;color:var(--muted);line-height:1.7;">対象：${escapeHtml(activeQuestionSource)}。CSVを読み込んだ場合、そのCSV内の問題全体に対する累計進捗を表示します。</p></div>
+        ${renderProgressBars(stats)}
+        ${renderAccuracyPie(stats.correct, stats.total)}
+        <div class="analysis-section"><h3>問題ごとの進捗</h3></div>
+        ${renderProgressQuestionList()}
+      `;
     }
 
     function loadHistory() {
@@ -2769,9 +2987,10 @@
 
     function updateOrderToggleUI() {
       document.querySelectorAll(".order-option").forEach((label) => {
-        const input = label.querySelector('input[name="orderMode"]');
+        const input = label.querySelector('input[type="radio"]');
         label.classList.toggle("selected", Boolean(input && input.checked));
       });
+      updatePosFilterStatus();
     }
 
     elements.clearSaveBtn.addEventListener("click", () => {
@@ -2784,6 +3003,7 @@
     elements.retryMistakesBtn.addEventListener("click", startMistakeQuiz);
     elements.openSetupBtn.addEventListener("click", openSetup);
     elements.openHistoryBtn.addEventListener("click", showHistoryResults);
+    elements.openProgressBtn.addEventListener("click", showCurrentProgressResults);
     elements.backHomeBtn.addEventListener("click", () => showScreen("home"));
     elements.beginQuizBtn.addEventListener("click", beginQuizFromSetup);
     elements.openRangePickerBtn.addEventListener("click", toggleRangePicker);
@@ -2794,8 +3014,7 @@
       button.addEventListener("click", () => {
         button.classList.toggle("selected");
         button.setAttribute("aria-pressed", button.classList.contains("selected") ? "true" : "false");
-        const selectedCount = elements.posFilterToggle.querySelectorAll(".pos-filter-option.selected").length;
-        if (!selectedCount) {
+        if (!getSelectedPosFilters().length) {
           button.classList.add("selected");
           button.setAttribute("aria-pressed", "true");
         }
@@ -2809,7 +3028,7 @@
     elements.scrollResultTopBtn.addEventListener("click", scrollResultTop);
     elements.scrollResultBottomBtn.addEventListener("click", scrollResultBottom);
     elements.floatingTopBtn.addEventListener("click", scrollResultTop);
-    document.querySelectorAll('input[name="orderMode"]').forEach((input) => {
+    document.querySelectorAll('input[name="orderMode"], input[name="questionScope"]').forEach((input) => {
       input.addEventListener("change", updateOrderToggleUI);
     });
     [elements.rangeStartInput, elements.rangeEndInput, elements.questionCountInput].forEach((input) => {
